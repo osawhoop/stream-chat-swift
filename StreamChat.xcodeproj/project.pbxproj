@@ -14,7 +14,6 @@
 		22086B48259509AC0007F8C0 /* ChatMessageComposerDocumentAttachmentsCollectionViewLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22086B47259509AC0007F8C0 /* ChatMessageComposerDocumentAttachmentsCollectionViewLayout.swift */; };
 		2210525F256FE16600A5F0DB /* ChatMessageInputSlashCommandView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2210525E256FE16600A5F0DB /* ChatMessageInputSlashCommandView.swift */; };
 		2229C6D9256562AC00C56B63 /* ChatMessageAttachment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2229C6D8256562AC00C56B63 /* ChatMessageAttachment.swift */; };
-		2229C6DF256562DB00C56B63 /* AttachmentPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2229C6DE256562DB00C56B63 /* AttachmentPayload.swift */; };
 		2236D97B25CC68E400C47F30 /* TestAttachmentEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2236D97A25CC68E400C47F30 /* TestAttachmentEnvelope.swift */; };
 		22411680258A91280034184D /* String+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2241167F258A91280034184D /* String+Extensions.swift */; };
 		224116B2258BACF90034184D /* Message.json in Resources */ = {isa = PBXBuildFile; fileRef = 224116B1258BACF90034184D /* Message.json */; };
@@ -3926,15 +3925,6 @@
 			path = ChatPresenceAvatarView;
 			sourceTree = "<group>";
 		};
-		ADB4164F26208C6B00E623E3 /* AttachmentPreview */ = {
-			isa = PBXGroup;
-			children = (
-				ADB4165026208C7900E623E3 /* AttachmentPreview.swift */,
-				ADB4165A26208C8700E623E3 /* ImageAttachmentPreview.swift */,
-			);
-			path = AttachmentPreview;
-			sourceTree = "<group>";
-		};
 		ADB3C478261638C500A69B66 /* ChatMessageQuoteView */ = {
 			isa = PBXGroup;
 			children = (
@@ -3942,6 +3932,15 @@
 				AD540AE1260CECA10082D802 /* ChatMessageQuoteView_Tests.swift */,
 			);
 			path = ChatMessageQuoteView;
+			sourceTree = "<group>";
+		};
+		ADB4164F26208C6B00E623E3 /* AttachmentPreview */ = {
+			isa = PBXGroup;
+			children = (
+				ADB4165026208C7900E623E3 /* AttachmentPreview.swift */,
+				ADB4165A26208C8700E623E3 /* ImageAttachmentPreview.swift */,
+			);
+			path = AttachmentPreview;
 			sourceTree = "<group>";
 		};
 		ADCDDCC325AE127C004E15FB /* UserUpdate */ = {

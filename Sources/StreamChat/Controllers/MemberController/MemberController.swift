@@ -203,6 +203,28 @@ public extension _ChatChannelMemberController {
             }
         }
     }
+    
+    /// Shadow ban the channel member.
+    /// - Parameter completion: The completion. Will be called on a **callbackQueue** when the network request is finished.
+    ///                 If request fails, the completion will be called with an error.
+    func shadowBan(completion: ((Error?) -> Void)? = nil) {
+        memberUpdater.shadowBanMember(userId, in: cid) { error in
+            self.callback {
+                completion?(error)
+            }
+        }
+    }
+    
+    /// Shadow unban the channel member.
+    /// - Parameter completion: The completion. Will be called on a **callbackQueue** when the network request is finished.
+    ///                         If request fails, the completion will be called with an error.
+    func removeShadowBan(completion: ((Error?) -> Void)? = nil) {
+        memberUpdater.removeShadowBan(from: userId, in: cid) { error in
+            self.callback {
+                completion?(error)
+            }
+        }
+    }
 }
 
 extension _ChatChannelMemberController {

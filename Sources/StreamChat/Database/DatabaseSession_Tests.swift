@@ -80,6 +80,7 @@ class DatabaseSession_Tests: StressTestCase {
             isOnline: true,
             isInvisible: true,
             isBanned: true,
+            isShadowBanned: true,
             extraData: .defaultValue
         )
         

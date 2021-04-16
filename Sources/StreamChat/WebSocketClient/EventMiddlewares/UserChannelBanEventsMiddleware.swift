@@ -34,6 +34,20 @@ struct UserChannelBanEventsMiddleware<ExtraData: ExtraDataTypes>: EventMiddlewar
                 memberDTO.isBanned = false
                 memberDTO.banExpiresAt = nil
                 
+            case let userShadowBannedEvent as UserShadowBannedEvent:
+                guard let memberDTO = session.member(userId: userShadowBannedEvent.userId, cid: cid) else {
+                    throw ClientError.MemberDoesNotExist(userId: userShadowBannedEvent.userId, cid: cid)
+                }
+                
+                memberDTO.isShadowBanned = true
+                
+            case let removedShadowBanFromUuser as RemovedShadowBanFromUserEvent:
+                guard let memberDTO = session.member(userId: removedShadowBanFromUuser.userId, cid: cid) else {
+                    throw ClientError.MemberDoesNotExist(userId: removedShadowBanFromUuser.userId, cid: cid)
+                }
+                
+                memberDTO.isShadowBanned = false
+                
             default:
                 break
             }

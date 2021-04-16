@@ -90,3 +90,37 @@ public struct UserUnbannedEvent: EventWithUserPayload, EventWithChannelId {
         payload = response
     }
 }
+
+// MARK: - User Shadow Ban
+
+public struct UserShadowBannedEvent: EventWithUserPayload, EventWithOwnerPayload, EventWithChannelId {
+    public let cid: ChannelId
+    public let userId: UserId
+    public let ownerId: UserId
+    public let createdAt: Date?
+    
+    let payload: Any
+    
+    init<ExtraData: ExtraDataTypes>(from response: EventPayload<ExtraData>) throws {
+        cid = try response.value(at: \.cid)
+        userId = try response.value(at: \.user?.id)
+        ownerId = try response.value(at: \.createdBy?.id)
+        createdAt = response.createdAt
+        payload = response
+    }
+}
+
+public struct RemovedShadowBanFromUserEvent: EventWithUserPayload, EventWithChannelId {
+    public let cid: ChannelId
+    public let userId: UserId
+    public let createdAt: Date?
+    
+    let payload: Any
+    
+    init<ExtraData: ExtraDataTypes>(from response: EventPayload<ExtraData>) throws {
+        cid = try response.value(at: \.cid)
+        userId = try response.value(at: \.user?.id)
+        createdAt = response.createdAt
+        payload = response
+    }
+}

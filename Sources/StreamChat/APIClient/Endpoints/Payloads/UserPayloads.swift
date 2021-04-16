@@ -11,6 +11,7 @@ enum UserPayloadsCodingKeys: String, CodingKey {
     case role
     case isOnline = "online"
     case isBanned = "banned"
+    case isShadowBanned = "shadow_banned"
     case createdAt = "created_at"
     case updatedAt = "updated_at"
     case lastActiveAt = "last_active"
@@ -37,6 +38,7 @@ class UserPayload<ExtraData: UserExtraData>: Decodable {
     let isOnline: Bool
     let isInvisible: Bool
     let isBanned: Bool
+    let isShadowBanned: Bool
     let teams: [TeamId]
     let extraData: ExtraData
     
@@ -51,6 +53,7 @@ class UserPayload<ExtraData: UserExtraData>: Decodable {
         isOnline: Bool,
         isInvisible: Bool,
         isBanned: Bool,
+        isShadowBanned: Bool,
         teams: [TeamId] = [],
         extraData: ExtraData
     ) {
@@ -64,6 +67,7 @@ class UserPayload<ExtraData: UserExtraData>: Decodable {
         self.isOnline = isOnline
         self.isInvisible = isInvisible
         self.isBanned = isBanned
+        self.isShadowBanned = isShadowBanned
         self.teams = teams
         self.extraData = extraData
     }
@@ -82,6 +86,7 @@ class UserPayload<ExtraData: UserExtraData>: Decodable {
         isOnline = try container.decode(Bool.self, forKey: .isOnline)
         isInvisible = try container.decodeIfPresent(Bool.self, forKey: .isInvisible) ?? false
         isBanned = try container.decodeIfPresent(Bool.self, forKey: .isBanned) ?? false
+        isShadowBanned = try container.decodeIfPresent(Bool.self, forKey: .isShadowBanned) ?? false
         teams = try container.decodeIfPresent([String].self, forKey: .teams) ?? []
         extraData = try ExtraData(from: decoder)
     }

@@ -89,6 +89,7 @@ class ChannelController_SwiftUI_Tests: iOS13TestCase {
             imageURL: .unique(),
             isOnline: true,
             isBanned: false,
+            isShadowBanned: false,
             isFlaggedByCurrentUser: false,
             userRole: .user,
             userCreatedAt: .unique,

@@ -56,8 +56,7 @@ public class _ChatChannelMember<ExtraData: UserExtraData>: _ChatUser<ExtraData> 
     ///
     /// Learn more about shadow banning in the [documentation](https://getstream.io/chat/docs/ios-swift/moderation/?language=swift#shadow-ban).
     ///
-    // TODO: Make public when working on CIS-720
-    internal let isShadowBannedFromChannel: Bool
+    public let isShadowBannedFromChannel: Bool
 
     init(
         id: String,
@@ -65,6 +64,7 @@ public class _ChatChannelMember<ExtraData: UserExtraData>: _ChatUser<ExtraData> 
         imageURL: URL?,
         isOnline: Bool,
         isBanned: Bool,
+        isShadowBanned: Bool,
         isFlaggedByCurrentUser: Bool,
         userRole: UserRole,
         userCreatedAt: Date,
@@ -98,6 +98,7 @@ public class _ChatChannelMember<ExtraData: UserExtraData>: _ChatUser<ExtraData> 
             imageURL: imageURL,
             isOnline: isOnline,
             isBanned: isBanned,
+            isShadowBanned: isShadowBanned,
             isFlaggedByCurrentUser: isFlaggedByCurrentUser,
             userRole: userRole,
             createdAt: userCreatedAt,

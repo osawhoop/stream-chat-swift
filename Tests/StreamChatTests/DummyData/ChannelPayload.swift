@@ -23,6 +23,7 @@ extension ChannelDetailPayload where ExtraData == NoExtraData {
                     isOnline: true,
                     isInvisible: true,
                     isBanned: true,
+                    isShadowBanned: true,
                     teams: [],
                     extraData: .defaultValue
                 ),
