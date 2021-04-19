@@ -87,16 +87,18 @@ open class _ChatMessageActionsVC<ExtraData: ExtraDataTypes>: _ViewController, Th
                 threadReplyActionItem(),
                 copyActionItem()
             ]
+            
+            #warning("Changed mute to ban")
 
             if message.isSentByCurrentUser {
                 actions += [editActionItem(), deleteActionItem()]
-            } else if currentUser.mutedUsers.contains(message.author) {
+            } else if message.author.isBanned {
                 actions.append(
-                    unmuteActionItem()
+                    unbanActionItem()
                 )
             } else {
                 actions.append(
-                    muteActionItem()
+                    banActionItem()
                 )
             }
 
@@ -180,6 +182,40 @@ open class _ChatMessageActionsVC<ExtraData: ExtraDataTypes>: _ViewController, Th
                 self.messageController.client
                     .userController(userId: author.id)
                     .unmute { _ in self.delegate?.didFinish(self) }
+            },
+            appearance: appearance
+        )
+    }
+    
+    /// Returns `ChatMessageActionItem` for ban action.
+    open func banActionItem() -> ChatMessageActionItem {
+        UnmuteUserActionItem(
+            action: { [weak self] _ in
+                guard
+                    let self = self,
+                    let author = self.message?.author
+                else { return }
+
+                self.messageController.client
+                    .memberController(userId: author.id, in: self.messageController.cid)
+                    .ban { _ in self.delegate?.didFinish(self) }
+            },
+            appearance: appearance
+        )
+    }
+    
+    /// Returns `ChatMessageActionItem` for unban action.
+    open func unbanActionItem() -> ChatMessageActionItem {
+        UnmuteUserActionItem(
+            action: { [weak self] _ in
+                guard
+                    let self = self,
+                    let author = self.message?.author
+                else { return }
+
+                self.messageController.client
+                    .memberController(userId: author.id, in: self.messageController.cid)
+                    .unban { _ in self.delegate?.didFinish(self) }
             },
             appearance: appearance
         )

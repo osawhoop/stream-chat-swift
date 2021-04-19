@@ -146,7 +146,7 @@ public struct BlockUserActionItem: ChatMessageActionItem {
 
 /// Instance of `ChatMessageActionItem` for muting user.
 public struct MuteUserActionItem: ChatMessageActionItem {
-    public var title: String { L10n.Message.Actions.userMute }
+    public var title: String { "Ban user" }
     public let icon: UIImage
     public let action: (ChatMessageActionItem) -> Void
     
@@ -165,7 +165,7 @@ public struct MuteUserActionItem: ChatMessageActionItem {
 
 /// Instance of `ChatMessageActionItem` for unmuting user.
 public struct UnmuteUserActionItem: ChatMessageActionItem {
-    public var title: String { L10n.Message.Actions.userUnmute }
+    public var title: String { "Unban user" }
     public let icon: UIImage
     public let action: (ChatMessageActionItem) -> Void
     
