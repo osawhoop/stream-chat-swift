@@ -6,8 +6,12 @@ import Foundation
 import StreamChat
 import UIKit
 
-class MessageListVC<ExtraData: ExtraDataTypes>: _ViewController, UICollectionViewDelegate, UICollectionViewDataSource,
-    UIConfigProvider {
+class MessageListVC<ExtraData: ExtraDataTypes>:
+    _ViewController,
+    UICollectionViewDelegate,
+    UICollectionViewDataSource,
+    UIConfigProvider,
+    MessageContentViewDelegate {
     var channelController: _ChatChannelController<ExtraData>!
     
     /// Consider to call `setNeedsScrollToMostRecentMessage(animated:)` instead
@@ -177,24 +181,8 @@ class MessageListVC<ExtraData: ExtraDataTypes>: _ViewController, UICollectionVie
             layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
             for: indexPath
         )
-
-        cell.messageContentView.delegate = .init(
-            didTapOnErrorIndicator: { [weak self] in
-                self?.handleTapOnErrorIndicator(forCellAt: indexPath)
-            },
-            didTapOnThread: { [weak self] in
-                self?.handleTapOnThread(forCellAt: indexPath)
-            },
-            didTapOnAttachment: { [weak self] in
-                self?.handleTapOnAttachment($0, forCellAt: indexPath)
-            },
-            didTapOnAttachmentAction: { [weak self] attachment, action in
-                self?.handleTapOnAttachmentAction(action, for: attachment, forCellAt: indexPath)
-            },
-            didTapOnQuotedMessage: { [weak self] in
-                self?.handleTapOnQuotedMessage($0, forCellAt: indexPath)
-            }
-        )
+        
+        cell.messageContentView.delegate = self
         cell.messageContentView.content = message
         
         return cell
@@ -350,24 +338,24 @@ class MessageListVC<ExtraData: ExtraDataTypes>: _ViewController, UICollectionVie
 
     // MARK: Cell action handlers
 
-    open func handleTapOnAttachment(_ attachment: ChatMessageAttachment, forCellAt indexPath: IndexPath) {
-        guard let attachment = attachment as? ChatMessageDefaultAttachment else {
-            return
-        }
+    open func didTapOnErrorIndicator(at indexPath: IndexPath) {
+        didSelectMessageCell(at: indexPath)
+    }
 
-        guard attachment.localState != .uploadingFailed else {
-            restartUploading(for: attachment)
-            return
-        }
+    open func didTapOnThread(at indexPath: IndexPath) {
+        guard let channel = channelController.channel else { return }
 
-        switch attachment.type {
-        case .image, .file:
-            router.showPreview(for: attachment)
-        case .link:
-            router.openLink(attachment)
-        default:
-            break
-        }
+        let controller = MessageThreadVC<ExtraData>()
+        controller.channelController = channelController
+        controller.messageController = channelController.client.messageController(
+            cid: channel.cid,
+            messageId: channelController.messages[indexPath.item].id
+        )
+        navigationController?.show(controller, sender: self)
+    }
+
+    open func didTapOnQuotedMessage(at indexPath: IndexPath) {
+        didSelectMessageCell(at: indexPath)
     }
 
     open func handleTapOnAttachmentAction(
@@ -381,26 +369,6 @@ class MessageListVC<ExtraData: ExtraDataTypes>: _ViewController, UICollectionVie
             messageId: channelController.messages[indexPath.row].id
         )
         messageController.dispatchEphemeralMessageAction(action)
-    }
-
-    open func handleTapOnQuotedMessage(_ quotedMessage: _ChatMessage<ExtraData>, forCellAt indexPath: IndexPath) {
-        didSelectMessageCell(at: indexPath)
-    }
-
-    open func handleTapOnErrorIndicator(forCellAt indexPath: IndexPath) {
-        didSelectMessageCell(at: indexPath)
-    }
-
-    open func handleTapOnThread(forCellAt indexPath: IndexPath) {
-        guard let channel = channelController.channel else { return }
-        
-        let controller = MessageThreadVC<ExtraData>()
-        controller.channelController = channelController
-        controller.messageController = channelController.client.messageController(
-            cid: channel.cid,
-            messageId: channelController.messages[indexPath.item].id
-        )
-        navigationController?.show(controller, sender: self)
     }
 }
 
