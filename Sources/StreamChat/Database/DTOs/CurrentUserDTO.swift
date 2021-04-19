@@ -185,6 +185,7 @@ extension _CurrentChatUser {
             imageURL: user.imageURL,
             isOnline: user.isOnline,
             isBanned: user.isBanned,
+            isShadowBanned: user.isShadowBanned,
             userRole: UserRole(rawValue: user.userRoleRaw)!,
             createdAt: user.userCreatedAt,
             updatedAt: user.userUpdatedAt,

@@ -232,6 +232,7 @@
         <attribute name="imageURL" optional="YES" attributeType="URI"/>
         <attribute name="isBanned" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isOnline" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="isShadowBanned" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="lastActivityAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="userCreatedAt" attributeType="Date" usesScalarValueType="NO"/>

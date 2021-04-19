@@ -150,6 +150,7 @@ extension _ChatChannelMember {
             imageURL: dto.user.imageURL,
             isOnline: dto.user.isOnline,
             isBanned: dto.user.isBanned,
+            isShadowBanned: dto.user.isShadowBanned,
             isFlaggedByCurrentUser: dto.user.flaggedBy != nil,
             userRole: UserRole(rawValue: dto.user.userRoleRaw)!,
             userCreatedAt: dto.user.userCreatedAt,

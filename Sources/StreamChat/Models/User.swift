@@ -43,6 +43,9 @@ public class _ChatUser<ExtraData: UserExtraData> {
     /// An indicator whether the user is banned.
     public let isBanned: Bool
     
+    /// An indicator whether the user is shadow banned.
+    public let isShadowBanned: Bool
+    
     /// An indicator whether the user is flagged by the current user.
     ///
     /// - Note: Please be aware that the value of this field is not persisted on the server,
@@ -79,6 +82,7 @@ public class _ChatUser<ExtraData: UserExtraData> {
         imageURL: URL?,
         isOnline: Bool,
         isBanned: Bool,
+        isShadowBanned: Bool,
         isFlaggedByCurrentUser: Bool,
         userRole: UserRole,
         createdAt: Date,
@@ -92,6 +96,7 @@ public class _ChatUser<ExtraData: UserExtraData> {
         self.imageURL = imageURL
         self.isOnline = isOnline
         self.isBanned = isBanned
+        self.isShadowBanned = isShadowBanned
         self.isFlaggedByCurrentUser = isFlaggedByCurrentUser
         self.userRole = userRole
         userCreatedAt = createdAt

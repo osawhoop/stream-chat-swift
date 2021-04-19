@@ -26,6 +26,7 @@ class CurrentUserPayload<ExtraData: ExtraDataTypes>: UserPayload<ExtraData.User>
         isOnline: Bool,
         isInvisible: Bool,
         isBanned: Bool,
+        isShadowBanned: Bool,
         teams: [TeamId] = [],
         extraData: ExtraData.User,
         devices: [DevicePayload] = [],
@@ -49,6 +50,7 @@ class CurrentUserPayload<ExtraData: ExtraDataTypes>: UserPayload<ExtraData.User>
             isOnline: isOnline,
             isInvisible: isInvisible,
             isBanned: isBanned,
+            isShadowBanned: isShadowBanned,
             teams: teams,
             extraData: extraData
         )

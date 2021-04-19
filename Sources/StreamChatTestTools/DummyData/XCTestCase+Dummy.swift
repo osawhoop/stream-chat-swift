@@ -22,6 +22,7 @@ extension XCTestCase {
             isOnline: true,
             isInvisible: false,
             isBanned: false,
+            isShadowBanned: false,
             extraData: .defaultValue
         )
     }
@@ -42,6 +43,7 @@ extension XCTestCase {
             isOnline: true,
             isInvisible: true,
             isBanned: true,
+            isShadowBanned: true,
             teams: [],
             extraData: .defaultValue
         )
@@ -227,6 +229,7 @@ extension XCTestCase {
                     isOnline: true,
                     isInvisible: true,
                     isBanned: true,
+                    isShadowBanned: true,
                     teams: [],
                     extraData: .init()
                 ),
@@ -308,6 +311,7 @@ private extension MemberPayload where ExtraData == NoExtraData {
                 isOnline: true,
                 isInvisible: true,
                 isBanned: true,
+                isShadowBanned: true,
                 teams: [],
                 extraData: .defaultValue
             ),
@@ -331,6 +335,7 @@ private extension UserPayload where ExtraData == NoExtraData {
             isOnline: true,
             isInvisible: true,
             isBanned: true,
+            isShadowBanned: true,
             teams: [],
             extraData: .defaultValue
         )

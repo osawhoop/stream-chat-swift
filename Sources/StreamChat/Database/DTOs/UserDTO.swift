@@ -12,6 +12,7 @@ class UserDTO: NSManagedObject {
     @NSManaged var name: String?
     @NSManaged var imageURL: URL?
     @NSManaged var isBanned: Bool
+    @NSManaged var isShadowBanned: Bool
     @NSManaged var isOnline: Bool
     @NSManaged var lastActivityAt: Date?
 
@@ -113,6 +114,7 @@ extension NSManagedObjectContext: UserDatabaseSession {
         dto.name = payload.name
         dto.imageURL = payload.imageURL
         dto.isBanned = payload.isBanned
+        dto.isShadowBanned = payload.isShadowBanned
         dto.isOnline = payload.isOnline
         dto.lastActivityAt = payload.lastActiveAt
         dto.userCreatedAt = payload.createdAt
@@ -199,6 +201,7 @@ extension _ChatUser {
             imageURL: dto.imageURL,
             isOnline: dto.isOnline,
             isBanned: dto.isBanned,
+            isShadowBanned: dto.isShadowBanned,
             isFlaggedByCurrentUser: dto.flaggedBy != nil,
             userRole: UserRole(rawValue: dto.userRoleRaw)!,
             createdAt: dto.userCreatedAt,

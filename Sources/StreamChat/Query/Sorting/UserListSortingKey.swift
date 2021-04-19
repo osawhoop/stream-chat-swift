@@ -14,6 +14,8 @@ public enum UserListSortingKey: String, SortingKey {
     case role = "userRoleRaw"
     /// Sort users by ban status.
     case isBanned
+    /// Sort users by shadow ban status.
+    case isShadowBanned
     /// Sort users by last activity date.
     case lastActivityAt
     
@@ -26,6 +28,7 @@ public enum UserListSortingKey: String, SortingKey {
         case .name: value = "name"
         case .role: value = "role"
         case .isBanned: value = "banned"
+        case .isShadowBanned: value = "shadow_banned"
         case .lastActivityAt: value = "last_active"
         }
         

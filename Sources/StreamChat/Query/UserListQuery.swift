@@ -46,6 +46,9 @@ public extension FilterKey where Scope: AnyUserListFilterScope {
     
     /// A filter key for matching the `isBanned` value.
     static var isBanned: FilterKey<Scope, Bool> { "banned" }
+
+    /// A filter key for matching the `isShadowBanned` value.
+    static var isShadowBanned: FilterKey<Scope, Bool> { "shadow_banned" }
     
     /// A filter key for matching the `createdAt` value.
     static var createdAt: FilterKey<Scope, Date> { "created_at" }

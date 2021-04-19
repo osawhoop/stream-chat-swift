@@ -84,6 +84,7 @@ extension _ChatChannelMember {
             imageURL: .unique(),
             isOnline: true,
             isBanned: false,
+            isShadowBanned: false,
             isFlaggedByCurrentUser: false,
             userRole: .user,
             userCreatedAt: .unique,

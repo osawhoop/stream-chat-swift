@@ -34,6 +34,7 @@ class MemberModelDTO_Tests: XCTestCase {
             isOnline: true,
             isInvisible: true,
             isBanned: true,
+            isShadowBanned: true,
             teams: ["RED", "GREEN"],
             extraData: .defaultValue
         )
@@ -93,6 +94,7 @@ class MemberModelDTO_Tests: XCTestCase {
             isOnline: true,
             isInvisible: true,
             isBanned: true,
+            isShadowBanned: true,
             extraData: .init()
         )
         

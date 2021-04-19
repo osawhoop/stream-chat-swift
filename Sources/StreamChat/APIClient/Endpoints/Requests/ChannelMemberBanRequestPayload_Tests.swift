@@ -11,13 +11,15 @@ final class ChannelMemberBanRequestPayload_Tests: XCTestCase {
         let cid: ChannelId = .unique
         let timeoutInMinutes = 15
         let reason: String = .unique
+        let shadow: Bool = .random()
         
         // Build the payload.
         let payload = ChannelMemberBanRequestPayload(
             userId: userId,
             cid: cid,
             timeoutInMinutes: timeoutInMinutes,
-            reason: reason
+            reason: reason,
+            shadow: shadow
         )
         
         // Encode the payload.
@@ -29,7 +31,8 @@ final class ChannelMemberBanRequestPayload_Tests: XCTestCase {
             "type": cid.type.rawValue,
             "id": cid.id,
             "timeout": timeoutInMinutes,
-            "reason": reason
+            "reason": reason,
+            "shadow": shadow
         ])
     }
 }

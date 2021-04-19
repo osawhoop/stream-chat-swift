@@ -23,7 +23,8 @@ extension Endpoint {
         _ userId: UserId,
         cid: ChannelId,
         timeoutInMinutes: Int? = nil,
-        reason: String? = nil
+        reason: String? = nil,
+        shadow: Bool = false
     ) -> Endpoint<EmptyResponse> {
         .init(
             path: "moderation/ban",
@@ -34,7 +35,8 @@ extension Endpoint {
                 userId: userId,
                 cid: cid,
                 timeoutInMinutes: timeoutInMinutes,
-                reason: reason
+                reason: reason,
+                shadow: shadow
             )
         )
     }

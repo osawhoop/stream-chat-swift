@@ -303,6 +303,7 @@ class UserSearchController_Tests: StressTestCase {
             isOnline: .random(),
             isInvisible: .random(),
             isBanned: .random(),
+            isShadowBanned: .random(),
             extraData: .defaultValue
         )
         try client.databaseContainer.writeSynchronously { session in
@@ -333,6 +334,7 @@ class UserSearchController_Tests: StressTestCase {
             isOnline: .random(),
             isInvisible: .random(),
             isBanned: .random(),
+            isShadowBanned: .random(),
             extraData: .defaultValue
         )
         try client.databaseContainer.writeSynchronously { session in

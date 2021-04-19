@@ -38,4 +38,33 @@ class ChannelMemberUpdater: Worker {
             completion?($0.error)
         }
     }
+    
+    /// Shadow bans the user in the channel.
+    /// - Parameters:
+    ///   - userId: The user identifier to shadow ban.
+    ///   - cid: The channel identifier to shadow ban in.
+    ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
+    func shadowBanMember(
+        _ userId: UserId,
+        in cid: ChannelId,
+        completion: ((Error?) -> Void)? = nil
+    ) {
+        apiClient.request(endpoint: .banMember(userId, cid: cid)) {
+            completion?($0.error)
+        }
+    }
+    
+    /// Removes shadow ban from the user in the channel.
+    /// - Parameters:
+    ///   - userId: The user identifier to remove shadow ban from.
+    ///   - cid: The channel identifier to remove shadow ban in.
+    ///   - completion: Called when the API call is finished. Called with `Error` if the remote update fails.
+    func removeShadowBan(
+        from userId: UserId,
+        in cid: ChannelId, completion: ((Error?) -> Void)? = nil
+    ) {
+        apiClient.request(endpoint: .unbanMember(userId, cid: cid)) {
+            completion?($0.error)
+        }
+    }
 }

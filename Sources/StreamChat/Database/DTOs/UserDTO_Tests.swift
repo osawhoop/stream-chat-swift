@@ -61,6 +61,7 @@ class UserDTO_Tests: XCTestCase {
             isOnline: true,
             isInvisible: true,
             isBanned: true,
+            isShadowBanned: true,
             teams: [],
             extraData: .defaultValue
         )

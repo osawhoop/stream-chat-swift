@@ -22,6 +22,7 @@ final class MissingEventsPayload_Tests: XCTestCase {
             isOnline: true,
             isInvisible: false,
             isBanned: false,
+            isShadowBanned: false,
             extraData: NoExtraData.defaultValue
         )
         

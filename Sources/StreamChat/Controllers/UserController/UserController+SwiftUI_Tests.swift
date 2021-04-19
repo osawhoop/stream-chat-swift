@@ -76,6 +76,7 @@ extension _ChatUser {
             id: .unique,
             isOnline: true,
             isBanned: true,
+            isShadowBanned: true,
             userRole: .user,
             createdAt: .unique,
             updatedAt: .unique,
