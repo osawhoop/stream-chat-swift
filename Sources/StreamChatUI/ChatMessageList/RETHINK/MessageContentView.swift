@@ -46,40 +46,6 @@ class MessageContentView<ExtraData: ExtraDataTypes>: _View, UIConfigProvider {
         .withoutAutoresizingMaskConstraints
     lazy var bubbleContentContainer = ContainerStackView(axis: .vertical)
         .withoutAutoresizingMaskConstraints
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-
-        maskContainerByReactionsBubble()
-    }
-
-    func maskContainerByReactionsBubble() {
-        guard let reactionsBubble = reactionsBubbleView else {
-            mainContainer.mask = nil
-            return
-        }
-
-        let bubbleOriginInMainContainer = reactionsBubble.superview!
-            .convert(reactionsBubble.frame.origin, to: mainContainer)
-
-        let moveToMainContainer = CGAffineTransform(
-            translationX: bubbleOriginInMainContainer.x,
-            y: bubbleOriginInMainContainer.y
-        )
-
-        let conainerMaskingPath = reactionsBubble.maskingPath
-        conainerMaskingPath.apply(moveToMainContainer)
-
-        let maskImage = UIGraphicsImageRenderer(size: mainContainer.bounds.size)
-            .image {
-                let layer = CAShapeLayer()
-                layer.path = conainerMaskingPath.cgPath
-                layer.render(in: $0.cgContext)
-            }
-            .asAlphaMask()
-
-        mainContainer.mask = UIImageView(image: maskImage)
-    }
     
     func setUpLayoutIfNeeded(options: ChatMessageLayoutOptions) {
         guard layoutOptions == nil else {
