@@ -234,8 +234,9 @@ class MessageContentView<ExtraData: ExtraDataTypes>: _View, UIConfigProvider {
         }
 
         // Metadata
-        metadataView?.authorLabel.isVisible = layoutOptions?.contains(.authorName) ?? false
-        metadataView?.content = content
+        metadataView?.content = content.map {
+            .init(message: $0, isAuthorNameShown: layoutOptions?.contains(.authorName) == true)
+        }
 
         // Quoted message view
         quotedMessageView?.content = content?.quotedMessage.map {

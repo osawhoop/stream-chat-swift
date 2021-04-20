@@ -8,7 +8,12 @@ import UIKit
 public typealias ChatMessageMetadataView = _ChatMessageMetadataView<NoExtraData>
 
 open class _ChatMessageMetadataView<ExtraData: ExtraDataTypes>: _View, UIConfigProvider {
-    public var content: _ChatMessage<ExtraData>? {
+    public struct Content {
+        let message: _ChatMessage<ExtraData>
+        let isAuthorNameShown: Bool
+    }
+
+    public var content: Content? {
         didSet { updateContentIfNeeded() }
     }
 
@@ -17,23 +22,29 @@ open class _ChatMessageMetadataView<ExtraData: ExtraDataTypes>: _View, UIConfigP
     
     // MARK: - Subviews
 
-    public private(set) lazy var stack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = UIStackView.spacingUseSystem
-        return stack.withoutAutoresizingMaskConstraints
-    }()
-
-    public private(set) lazy var currentUserVisabilityIndicator = uiConfig
-        .messageList
-        .messageContentSubviews
-        .onlyVisibleForCurrentUserIndicator
-        .init()
+    public private(set) lazy var stack = ContainerStackView()
         .withoutAutoresizingMaskConstraints
 
-    public private(set) lazy var timestampLabel: UILabel = UILabel().withBidirectionalLanguagesSupport
+    public private(set) lazy var eyeContainer = ContainerStackView()
+        .withoutAutoresizingMaskConstraints
+
+    public private(set) lazy var timestampLabel: UILabel = UILabel()
+        .withAdjustingFontForContentSizeCategory
+        .withBidirectionalLanguagesSupport
+        .withoutAutoresizingMaskConstraints
 
     public private(set) lazy var authorLabel = UILabel()
+        .withAdjustingFontForContentSizeCategory
+        .withBidirectionalLanguagesSupport
+        .withoutAutoresizingMaskConstraints
+
+    public private(set) lazy var eyeImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        return imageView.withoutAutoresizingMaskConstraints
+    }()
+
+    public private(set) lazy var eyeTextLabel = UILabel()
         .withAdjustingFontForContentSizeCategory
         .withBidirectionalLanguagesSupport
         .withoutAutoresizingMaskConstraints
@@ -43,9 +54,13 @@ open class _ChatMessageMetadataView<ExtraData: ExtraDataTypes>: _View, UIConfigP
     override open func setUpAppearance() {
         super.setUpAppearance()
         let color = uiConfig.colorPalette.subtitleText
-        currentUserVisabilityIndicator.textLabel.textColor = color
-        currentUserVisabilityIndicator.imageView.tintColor = color
-        
+        eyeTextLabel.textColor = color
+        eyeTextLabel.font = uiConfig.font.footnote
+        eyeTextLabel.text = L10n.Message.onlyVisibleToYou
+
+        eyeImageView.tintColor = color
+        eyeImageView.image = uiConfig.images.onlyVisibleToCurrentUser
+
         timestampLabel.font = uiConfig.font.footnote
         timestampLabel.adjustsFontForContentSizeCategory = true
         timestampLabel.textColor = color
@@ -55,62 +70,36 @@ open class _ChatMessageMetadataView<ExtraData: ExtraDataTypes>: _View, UIConfigP
     }
 
     override open func setUpLayout() {
+        eyeContainer.addArrangedSubview(eyeImageView)
+        eyeContainer.addArrangedSubview(eyeTextLabel)
+
+        stack.addArrangedSubview(eyeContainer)
         stack.addArrangedSubview(authorLabel)
-        stack.addArrangedSubview(currentUserVisabilityIndicator)
         stack.addArrangedSubview(timestampLabel)
+
         embed(stack)
     }
 
     override open func updateContent() {
-        if let createdAt = content?.createdAt {
+        if let createdAt = content?.message.createdAt {
             timestampLabel.text = dateFormatter.string(from: createdAt)
         } else {
             timestampLabel.text = nil
         }
-        currentUserVisabilityIndicator.isVisible = content?.onlyVisibleForCurrentUser ?? false
-        
-        authorLabel.text = content?.author.name
-    }
-}
 
-open class ChatMessageOnlyVisibleForCurrentUserIndicator<ExtraData: ExtraDataTypes>: _View, UIConfigProvider {
-    // MARK: - Subviews
+        if content?.message.onlyVisibleForCurrentUser ?? false {
+            stack.showSubview(eyeContainer, animated: false)
+        } else {
+            stack.hideSubview(eyeContainer, animated: false)
+        }
 
-    public private(set) lazy var stack: UIStackView = {
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.alignment = .center
-        stack.spacing = UIStackView.spacingUseSystem
-        return stack.withoutAutoresizingMaskConstraints
-    }()
+        if content?.isAuthorNameShown ?? false {
+            stack.showSubview(authorLabel, animated: false)
+        } else {
+            stack.hideSubview(authorLabel, animated: false)
+        }
 
-    public private(set) lazy var imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFit
-        return imageView.withoutAutoresizingMaskConstraints
-    }()
-
-    public private(set) lazy var textLabel: UILabel = {
-        let label = UILabel()
-        label.font = uiConfig.font.footnote
-        label.adjustsFontForContentSizeCategory = true
-        return label.withoutAutoresizingMaskConstraints
-    }()
-
-    // MARK: - Overrides
-
-    override open func setUpAppearance() {
-        super.setUpAppearance()
-        imageView.image = uiConfig.images.onlyVisibleToCurrentUser
-        textLabel.text = L10n.Message.onlyVisibleToYou
-    }
-
-    override open func setUpLayout() {
-        stack.addArrangedSubview(imageView)
-        stack.addArrangedSubview(textLabel)
-        embed(stack)
-
-        imageView.widthAnchor.pin(equalTo: imageView.heightAnchor).isActive = true
+        authorLabel.text = content?.message.author.name
     }
 }
 

@@ -662,7 +662,9 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, UIConfigPr
         setupMetadataView()
         let messageMetadataView = self.messageMetadataView!
         
-        messageMetadataView.content = message?.message
+        messageMetadataView.content = message.map {
+            .init(message: $0.message, isAuthorNameShown: false)
+        }
 
         messageMetadataView.isVisible = shouldDisplayMetadataView
     }
