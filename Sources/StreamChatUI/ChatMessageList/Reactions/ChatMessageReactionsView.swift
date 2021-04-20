@@ -151,6 +151,8 @@ class _ReactionsCompactView<ExtraData: ExtraDataTypes>: _View, UIConfigProvider 
 
         reactions.forEach { reaction in
             let itemView = uiConfig.messageList.messageReactions.reactionItemView.init()
+            itemView.setContentCompressionResistancePriority(.required, for: .horizontal)
+            itemView.setContentCompressionResistancePriority(.required, for: .vertical)
             itemView.content = .init(
                 useBigIcon: false,
                 reaction: reaction,

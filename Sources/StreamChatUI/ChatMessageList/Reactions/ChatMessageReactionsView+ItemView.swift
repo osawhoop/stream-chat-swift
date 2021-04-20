@@ -11,6 +11,10 @@ extension _ChatMessageReactionsView {
             didSet { updateContentIfNeeded() }
         }
 
+        override open var intrinsicContentSize: CGSize {
+            image(for: .normal)?.size ?? .zero
+        }
+
         // MARK: - Overrides
 
         override open func setUp() {
