@@ -268,7 +268,7 @@ public class ContainerStackView: UIView {
     /// The constraint for axis-trailing spacing for the given vies
     private var spacingConstraintsByView: [UIView: NSLayoutConstraint] = [:]
 
-    private var hideConstraintsByView: [UIView: (width: NSLayoutConstraint, height: NSLayoutConstraint)] = [:]
+    private var hideConstraintsByView: [UIView: NSLayoutConstraint] = [:]
 
     private var respectsLayoutMarginsByView: [UIView: Bool] = [:]
 
@@ -293,18 +293,15 @@ public class ContainerStackView: UIView {
 
         updateConstraintsIfNeeded()
 
-        hideConstraintsByView[subview] = (
-            width: subview.widthAnchor.constraint(equalToConstant: 0),
-            height: subview.heightAnchor.constraint(equalToConstant: 0)
-        )
+        hideConstraintsByView[subview] = {
+            let anchor = axis == .horizontal ? subview.widthAnchor : subview.heightAnchor
+            return anchor.constraint(equalToConstant: 0)
+        }()
 
         Animate(isAnimated: animated) {
             subview.alpha = 0
 
-            if self.axis == .horizontal {
-                self.hideConstraintsByView[subview]?.width.isActive = true
-            }
-            self.hideConstraintsByView[subview]?.height.isActive = true
+            self.hideConstraintsByView[subview]?.isActive = true
 
             self.spacingConstraintsByView[subview]?.setTemporaryConstant(0)
 
@@ -320,8 +317,7 @@ public class ContainerStackView: UIView {
 
         Animate(isAnimated: animated) {
             subview.alpha = 1
-            self.hideConstraintsByView[subview]?.width.isActive = false
-            self.hideConstraintsByView[subview]?.height.isActive = false
+            self.hideConstraintsByView[subview]?.isActive = false
 
             self.spacingConstraintsByView[subview]?.resetTemporaryConstant()
             self.layoutIfNeeded()
