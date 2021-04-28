@@ -314,7 +314,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>: _ViewController,
             isFirstInGroup: isFirstInGroup,
             isLastInGroup: isLastInGroup,
             didTapOnAttachment: { [weak self] attachment in
-                self?.didTapOnAttachment(attachment, in: message)
+                self?.didTapOnAttachment(attachment, in: message, indexPath: indexPath)
             },
             didTapOnAttachmentAction: { [weak self] _, action in
                 guard let self = self else { return }
@@ -396,14 +396,32 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>: _ViewController,
         )
     }
 
-    private func didTapOnAttachment(_ attachment: ChatMessageDefaultAttachment, in message: _ChatMessage<ExtraData>) {
+    private func didTapOnAttachment(
+        _ attachment: ChatMessageDefaultAttachment,
+        in message: _ChatMessage<ExtraData>,
+        indexPath: IndexPath
+    ) {
         switch attachment.localState {
         case .uploadingFailed:
             guard let id = attachment.id else { return }
             let messageController = dataSource.controllerForMessage(self, message)
             messageController.restartFailedAttachmentUploading(with: id)
         default:
-            router.showPreview(for: attachment)
+            switch attachment.type {
+            case .audio, .file, .custom, .giphy, .link, .video:
+                router.showPreview(for: attachment)
+            case .image:
+                guard
+                    let cell = collectionView.cellForItem(at: indexPath) as? _СhatMessageCollectionViewCell<ExtraData>,
+                    let previews = cell.messageView.attachmentsView?.imageGallery.previews
+                else { return }
+                router.showImageGallery(
+                    for: message,
+                    initialAttachment: attachment,
+                    previews: previews,
+                    from: self
+                )
+            }
         }
     }
 
