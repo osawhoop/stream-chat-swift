@@ -45,3 +45,6 @@
 
 "composer.suggestions.commands.header" = "Instant Commands";
 "message.sending.attachment-uploading-failed" = "UPLOADING FAILED";
+
+"current-selection" = "%d of %d";
+"sent" = "Sent";

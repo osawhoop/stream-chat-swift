@@ -10,11 +10,25 @@ public extension Appearance {
         // MARK: - General
 
         public var loadingIndicator: UIImage = UIImage(named: "loading_indicator", in: .streamChatUI)!
-        public var close: UIImage = UIImage(named: "close", in: .streamChatUI)!
+        public var close: UIImage = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "xmark")!
+            } else {
+                return UIImage(named: "close", in: .streamChatUI)!
+            }
+        }()
+
         public var close1: UIImage = UIImage(named: "dismissInCircle", in: .streamChatUI)!
         public var back: UIImage = UIImage(named: "icn_back", in: .streamChatUI)!
         public var onlyVisibleToCurrentUser = UIImage(named: "eye", in: .streamChatUI)!
         public var more = UIImage(named: "icn_more", in: .streamChatUI)!
+        public var share: UIImage = {
+            if #available(iOS 13.0, *) {
+                return UIImage(systemName: "square.and.arrow.up")!
+            } else {
+                return UIImage(named: "share", in: .streamChatUI)!
+            }
+        }()
 
         // MARK: - ChannelList
 

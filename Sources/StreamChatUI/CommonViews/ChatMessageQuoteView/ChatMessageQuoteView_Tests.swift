@@ -35,14 +35,14 @@ class ChatMessageQuoteView_Tests: XCTestCase {
     }
 
     func test_withImageAttachmentAppearance() {
-        let attachment = ChatMessageDefaultAttachment(imageUrl: TestImages.yoda.url, title: "")
+        let attachment = ChatMessageDefaultAttachment.mock(imageUrl: TestImages.yoda.url, title: "")
         view.content = makeContent(text: "Hello Vader!", attachments: [attachment])
 
         AssertSnapshot(view)
     }
 
     func test_withLongTextAppearance() {
-        let attachment = ChatMessageDefaultAttachment(imageUrl: TestImages.yoda.url, title: "")
+        let attachment = ChatMessageDefaultAttachment.mock(imageUrl: TestImages.yoda.url, title: "")
         view.content = makeContent(text: "Hello Darth Vader! Where is my light saber?", attachments: [attachment])
 
         AssertSnapshot(view)
@@ -106,7 +106,7 @@ class ChatMessageQuoteView_Tests: XCTestCase {
         }
 
         let view = TestView().withoutAutoresizingMaskConstraints
-        let attachment = ChatMessageDefaultAttachment(imageUrl: TestImages.yoda.url, title: "")
+        let attachment = ChatMessageDefaultAttachment.mock(imageUrl: TestImages.yoda.url, title: "")
         view.content = makeContent(text: "Hello Vader!", attachments: [attachment])
         view.addSizeConstraints()
 
@@ -139,14 +139,5 @@ extension ChatMessageQuoteView_Tests {
             isSentByCurrentUser: isSentByCurrentUser
         )
         return .init(message: message, avatarAlignment: avatarAlignment)
-    }
-}
-
-// MARK: - Mock ChatMessageDefaultAttachment
-
-private extension ChatMessageDefaultAttachment {
-    init(imageUrl: URL?, title: String) {
-        self.init(id: .unique, type: .image, localURL: nil, localState: nil, title: title)
-        imageURL = imageUrl
     }
 }

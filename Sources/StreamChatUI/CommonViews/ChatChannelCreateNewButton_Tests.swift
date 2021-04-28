@@ -27,7 +27,7 @@ class ChatChannelCreateNewButton_Tests: XCTestCase {
 
     func test_customizationUsingAppearance() {
         var appearance = Appearance()
-        appearance.images.newChat = appearance.images.close
+        appearance.images.newChat = appearance.images.close1
 
         let view = ChatChannelCreateNewButton().withoutAutoresizingMaskConstraints
         view.appearance = appearance
