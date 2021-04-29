@@ -38,6 +38,9 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
     /// New instance of `messageContentViewClass` that is populated with `message` data.
     open private(set) lazy var messageContentView = messageContentViewClass.init()
         .withoutAutoresizingMaskConstraints
+    
+    open private(set) lazy var messageContentContainerView = UIView()
+        .withoutAutoresizingMaskConstraints
 
     /// `messageContentView` class that is populated with `message` and shown.
     public var messageContentViewClass: _ChatMessageContentView<ExtraData>.Type!
@@ -66,7 +69,7 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
     }
 
     override open func setUpLayout() {
-        messageContentView.setupMessageBubbleView()
+//        messageContentView.setupMessageBubbleView()
         scrollView.embed(scrollContentView)
         view.embed(blurView)
         view.embed(scrollView)
@@ -95,12 +98,14 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
                     reactionsController.view.leadingAnchor
                         .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
                     reactionsController.reactionsBubble.tailTrailingAnchor
-                        .pin(equalTo: messageContentView.messageBubbleView!.leadingAnchor)
+                        .pin(equalTo: messageContentContainerView.leadingAnchor)
+//                        .pin(equalTo: messageContentView.messageBubbleView!.leadingAnchor)
                 ]
             } else {
                 constraints += [
                     reactionsController.reactionsBubble.tailLeadingAnchor
-                        .pin(equalTo: messageContentView.messageBubbleView!.trailingAnchor)
+                        .pin(equalTo: messageContentContainerView.trailingAnchor)
+//                        .pin(equalTo: messageContentView.messageBubbleView!.trailingAnchor)
                 ]
             }
         }
@@ -109,10 +114,16 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
             actionsController.view.widthAnchor.pin(equalTo: scrollContentView.widthAnchor, multiplier: 0.7)
         )
         
-        messageContainerStackView.addArrangedSubview(messageContentView)
-        constraints.append(
-            messageContentView.widthAnchor.pin(equalToConstant: messageViewFrame.width)
-        )
+//        messageContainerStackView.addArrangedSubview(messageContentView)
+//        constraints.append(
+//            messageContentView.widthAnchor.pin(equalToConstant: messageViewFrame.width)
+//        )
+        messageContainerStackView.addArrangedSubview(messageContentContainerView)
+        constraints += [
+            messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
+            // TODO: This should be removed *after* the animation
+            messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
+        ]
 
         let actionsContainerStackView = ContainerStackView()
         actionsContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
@@ -123,11 +134,13 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
 
         if message.isSentByCurrentUser {
             constraints.append(
-                actionsController.view.trailingAnchor.pin(equalTo: messageContentView.trailingAnchor)
+                actionsController.view.trailingAnchor.pin(equalTo: messageContentContainerView.trailingAnchor)
+//                actionsController.view.trailingAnchor.pin(equalTo: messageContentView.trailingAnchor)
             )
         } else {
             constraints.append(
-                actionsController.view.leadingAnchor.pin(equalTo: messageContentView.messageBubbleView!.leadingAnchor)
+                actionsController.view.leadingAnchor.pin(equalTo: messageContentContainerView.leadingAnchor)
+//                actionsController.view.leadingAnchor.pin(equalTo: messageContentView.messageBubbleView!.leadingAnchor)
             )
         }
         
@@ -156,13 +169,13 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
         if messageViewFrame.minY <= 0 {
             constraints += [
                 messageContainerStackView.topAnchor.pin(equalTo: scrollContentView.topAnchor),
-                (reactionsController?.view ?? messageContentView).topAnchor
+                (reactionsController?.view ?? messageContentContainerView).topAnchor
                     .pin(equalTo: scrollContentView.topAnchor)
             ]
         } else {
             reactionsController?.view.layoutIfNeeded()
             constraints += [
-                messageContentView.topAnchor.pin(
+                messageContentContainerView.topAnchor.pin(
                     equalTo: scrollContentView.topAnchor,
                     constant: messageViewFrame.minY
                 ),
@@ -174,21 +187,21 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
     }
 
     override open func updateContent() {
-        messageContentView.message = message
-        messageContentView.reactionsBubble?.isVisible = false
-        messageContentView.constraintsToActivate.removeAll(where: { $0 == messageContentView.bubbleToReactionsConstraint })
+//        messageContentView.message = message
+//        messagecontein.reactionsBubble?.isVisible = false
+//        messageContentView.constraintsToActivate.removeAll(where: { $0 == messageContentView.bubbleToReactionsConstraint })
     }
 
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         // Initial values for the animation
-        blurView.alpha = 0
+//        blurView.alpha = 0
 
-        reactionsController?.view.alpha = 0
-        reactionsController?.view.transform = .init(scaleX: 0.5, y: 0.5)
-
-        actionsController.view.alpha = 0
-        actionsController.view.transform = .init(scaleX: 0.5, y: 0.5)
+//        reactionsController?.view.alpha = 0
+//        reactionsController?.view.transform = .init(scaleX: 0.5, y: 0.5)
+//
+//        actionsController.view.alpha = 0
+//        actionsController.view.transform = .init(scaleX: 0.5, y: 0.5)
         
         // Initially, the `applyInitialContentOffset` invocation was in `viewDidLayoutSubviews`
         // since the content offset can be applied when all the views are laid out
@@ -200,22 +213,23 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
         // Dispatching the invocation from `viewWillAppear`:
         //  1. makes sure we do it once;
         //  2. postpones it to the next run-loop iteration which guarantees it happens after `viewDidLayoutSubviews`
+//        applyInitialContentOffset()
         DispatchQueue.main.async {
-            self.applyInitialContentOffset()
-            
-            Animate {
-                self.scrollToMakeMessageVisible()
-                self.blurView.alpha = 1
-
-                self.actionsController.view.alpha = 1
-                self.actionsController.view.transform = .identity
-            }
-            
-            Animate(delay: 0.1) {
-                self.reactionsController?.view.alpha = 1
-                self.reactionsController?.view.transform = .identity
-            }
+//            self.applyInitialContentOffset()
         }
+//            Animate {
+//                self.scrollToMakeMessageVisible()
+//                self.blurView.alpha = 1
+//
+//                self.actionsController.view.alpha = 1
+//                self.actionsController.view.transform = .identity
+//            }
+//
+//            Animate(delay: 0.1) {
+//                self.reactionsController?.view.alpha = 1
+//                self.reactionsController?.view.transform = .identity
+//            }
+//        }
     }
     
     /// Computes initial content offset of `scrollView` for initial possition of its contents.
@@ -224,7 +238,8 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
             x: 0,
             y: max(
                 0,
-                -messageViewFrame.minY + ((reactionsController?.view.frame.origin.y ?? 0) - messageContentView.frame.origin.y)
+                -messageViewFrame
+                    .minY + ((reactionsController?.view.frame.origin.y ?? 0) - messageContentContainerView.frame.origin.y)
             )
         )
         scrollView.setContentOffset(contentOffset, animated: false)
@@ -238,6 +253,7 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
 
     /// Triggered when `blurView` is tapped.
     @objc open func didTapOnOverlay() {
-        dismiss(animated: true)
+//        dismiss(animated: true)
+        dismiss(animated: false)
     }
 }

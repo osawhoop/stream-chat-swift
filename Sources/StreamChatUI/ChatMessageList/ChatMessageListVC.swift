@@ -348,23 +348,24 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>: _ViewController,
             delay: 0,
             options: [.curveEaseIn],
             animations: {
-                cell.messageView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
+//                cell.messageView.transform = CGAffineTransform(scaleX: 0.95, y: 0.95)
             },
             completion: { _ in
                 self.impactFeedbackGenerator.impactOccurred()
 
-                UIView.animate(
-                    withDuration: 0.1,
-                    delay: 0,
-                    options: [.curveEaseOut],
-                    animations: {
-                        cell.messageView.transform = .identity
-                    }
-                )
+//                UIView.animate(
+//                    withDuration: 0.1,
+//                    delay: 0,
+//                    options: [.curveEaseOut],
+//                    animations: {
+//                        cell.messageView.transform = .identity
+//                    }
+//                )
                 
                 self.router.showMessageActionsPopUp(
                     messageContentViewClass: type(of: cell).messageContentViewClass,
                     messageContentFrame: cell.messageView.superview!.convert(cell.messageView.frame, to: nil),
+                    messageContentView: cell.messageView,
                     messageData: messageData,
                     messageActionsController: actionsController,
                     messageReactionsController: reactionsController
