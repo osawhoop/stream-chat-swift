@@ -107,6 +107,7 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
     UIViewControllerAnimatedTransitioning {
     open var isPresenting: Bool = false
     open weak var messageContentView: _ChatMessageContentView<ExtraData>!
+    public private(set) lazy var impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     
     public func animationController(
         forPresented presented: UIViewController,
@@ -157,14 +158,6 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
         blurView.frame = toVC.view.frame
         transitionContext.containerView.addSubview(blurView)
         
-//        let toVCSnapshot = toVC.view.snapshotView(afterScreenUpdates: true)
-//        if let toVCSnapshot = toVCSnapshot {
-//            transitionContext.containerView.addSubview(toVCSnapshot)
-//            toVCSnapshot.frame = toVC.view.frame
-//            toVCSnapshot.alpha = 0
-//            toVC.view.isHidden = true
-//        }
-        
         let reactionsSnapshot: UIView?
         if let reactionsController = toVC.reactionsController {
             reactionsSnapshot = reactionsController.view.snapshotView(afterScreenUpdates: true)
@@ -192,19 +185,30 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
         
         let duration = transitionDuration(using: transitionContext)
         UIView.animate(
-            withDuration: duration,
+            withDuration: 0.2 * duration,
             delay: 0,
+            options: [.curveEaseOut],
+            animations: { [self] in
+                messageContentView.transform = CGAffineTransform(scaleX: 0.8, y: 0.8)
+            },
+            completion: { [self] _ in
+                impactFeedbackGenerator.impactOccurred()
+            }
+        )
+        UIView.animate(
+            withDuration: 0.8 * duration,
+            delay: 0.2 * duration,
             usingSpringWithDamping: 0.9,
             initialSpringVelocity: 4,
             animations: { [self] in
                 actionsSnapshot.transform = .identity
                 reactionsSnapshot?.transform = .identity
+                messageContentView.transform = .identity
                 messageContentView.frame.origin = toVC.messageContentContainerView.superview!.convert(
                     toVC.messageContentContainerView.frame,
                     to: nil
                 )
                 .origin
-//                fromVCSnapshot?.alpha = 0
                 if let effect = (toVC.blurView as? UIVisualEffectView)?.effect {
                     blurView.effect = effect
                 }
@@ -216,8 +220,6 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
                 toVC.messageContentContainerView.addSubview(messageContentView)
                 messageContentView.translatesAutoresizingMaskIntoConstraints = false
                 toVC.messageContentContainerView.embed(messageContentView)
-//                toVC.messageContentView.isHidden = false
-//                transitionMessageContentView.removeFromSuperview()
                 fromVCSnapshot?.removeFromSuperview()
                 blurView.removeFromSuperview()
                 reactionsSnapshot?.removeFromSuperview()
