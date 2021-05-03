@@ -27,10 +27,11 @@ open class _ChatMessageListRouter<ExtraData: ExtraDataTypes>: ChatRouter<_ChatMe
         popup.actionsController = messageActionsController
         popup.reactionsController = messageReactionsController
         popup.modalPresentationStyle = .overFullScreen
-//        popup.modalTransitionStyle = .crossDissolve
         popup.transitioningDelegate = transitionController
         
+        transitionController.messageContentViewFrame = messageContentFrame
         transitionController.messageContentView = messageContentView
+        transitionController.messageContentViewSuperview = messageContentView.superview
         
         rootViewController.present(popup, animated: true)
     }
@@ -106,7 +107,10 @@ open class _ChatMessageListRouter<ExtraData: ExtraDataTypes>: ChatRouter<_ChatMe
 open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObject, UIViewControllerTransitioningDelegate,
     UIViewControllerAnimatedTransitioning {
     open var isPresenting: Bool = false
+    open var messageContentViewFrame: CGRect = .zero
+    open var messageContentViewActivateConstraints: [NSLayoutConstraint] = []
     open weak var messageContentView: _ChatMessageContentView<ExtraData>!
+    open weak var messageContentViewSuperview: UIView!
     public private(set) lazy var impactFeedbackGenerator = UIImpactFeedbackGenerator(style: .medium)
     
     public func animationController(
@@ -120,20 +124,19 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
     
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         isPresenting = false
-//        return self
-        return nil
+        return self
     }
     
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-//        0.25
-        2
+        0.25
+//        2
     }
     
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
         if isPresenting {
             animatePresent(using: transitionContext)
         } else {
-            animateDismiss()
+            animateDismiss(using: transitionContext)
         }
     }
     
@@ -143,7 +146,6 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
             let fromVC = transitionContext.viewController(forKey: .from)
         else { return }
         messageContentView.isHidden = true
-        toVC.messageContentView.isHidden = true
         
         transitionContext.containerView.addSubview(toVC.view)
         
@@ -163,6 +165,7 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
             reactionsSnapshot = reactionsController.view.snapshotView(afterScreenUpdates: true)
             reactionsSnapshot?.frame = reactionsController.view.superview!.convert(reactionsController.view.frame, to: nil)
             reactionsSnapshot?.transform = CGAffineTransform(scaleX: 0, y: 0)
+            reactionsSnapshot?.alpha = 0.0
             reactionsSnapshot.map(transitionContext.containerView.addSubview)
         } else {
             reactionsSnapshot = nil
@@ -172,13 +175,18 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
         let actionsFrame = toVC.actionsController.view.superview!.convert(toVC.actionsController.view.frame, to: nil)
         actionsSnapshot.frame = actionsFrame
         actionsSnapshot.transform = CGAffineTransform(scaleX: 0, y: 0)
+        actionsSnapshot.alpha = 0.0
         transitionContext.containerView.addSubview(actionsSnapshot)
 
         toVC.view.isHidden = true
 
         messageContentView.isHidden = false
         let frame = messageContentView.superview!.convert(messageContentView.frame, to: nil)
+        let allMessageContentViewSuperviewConstraints = Set(messageContentViewSuperview.constraints)
         messageContentView.removeFromSuperview()
+        messageContentViewActivateConstraints = Array(
+            allMessageContentViewSuperviewConstraints.subtracting(messageContentViewSuperview.constraints)
+        )
         transitionContext.containerView.addSubview(messageContentView)
         messageContentView.frame = frame
         messageContentView.translatesAutoresizingMaskIntoConstraints = true
@@ -202,7 +210,9 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
             initialSpringVelocity: 4,
             animations: { [self] in
                 actionsSnapshot.transform = .identity
+                actionsSnapshot.alpha = 1.0
                 reactionsSnapshot?.transform = .identity
+                reactionsSnapshot?.alpha = 1.0
                 messageContentView.transform = .identity
                 messageContentView.frame.origin = toVC.messageContentContainerView.superview!.convert(
                     toVC.messageContentContainerView.frame,
@@ -230,5 +240,76 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
         )
     }
     
-    open func animateDismiss() {}
+    open func animateDismiss(using transitionContext: UIViewControllerContextTransitioning) {
+        guard
+            let fromVC = transitionContext.viewController(forKey: .from) as? _ChatMessagePopupVC<ExtraData>,
+            let toVC = transitionContext.viewController(forKey: .to)
+        else { return }
+        messageContentView.isHidden = true
+        
+        let toVCSnapshot = toVC.view.snapshotView(afterScreenUpdates: true)
+        if let toVCSnapshot = toVCSnapshot {
+            transitionContext.containerView.addSubview(toVCSnapshot)
+            toVCSnapshot.frame = toVC.view.frame
+            toVC.view.isHidden = true
+        }
+
+        let blurView = UIVisualEffectView()
+        if let effect = (fromVC.blurView as? UIVisualEffectView)?.effect {
+            blurView.effect = effect
+        }
+        blurView.frame = fromVC.view.frame
+        transitionContext.containerView.addSubview(blurView)
+        
+        let reactionsSnapshot: UIView?
+        if let reactionsController = fromVC.reactionsController {
+            reactionsSnapshot = reactionsController.view.snapshotView(afterScreenUpdates: true)
+            reactionsSnapshot?.frame = reactionsController.view.superview!.convert(reactionsController.view.frame, to: nil)
+            reactionsSnapshot?.transform = .identity
+            reactionsSnapshot.map(transitionContext.containerView.addSubview)
+        } else {
+            reactionsSnapshot = nil
+        }
+        
+        let actionsSnapshot = fromVC.actionsController.view.snapshotView(afterScreenUpdates: true)!
+        actionsSnapshot.frame = fromVC.actionsController.view.superview!.convert(fromVC.actionsController.view.frame, to: nil)
+        transitionContext.containerView.addSubview(actionsSnapshot)
+
+//        fromVC.view.isHidden = true
+
+        messageContentView.isHidden = false
+        let frame = messageContentView.superview!.convert(messageContentView.frame, to: nil)
+        messageContentView.removeFromSuperview()
+        transitionContext.containerView.addSubview(messageContentView)
+        messageContentView.frame = frame
+        messageContentView.translatesAutoresizingMaskIntoConstraints = true
+        
+        let duration = transitionDuration(using: transitionContext)
+        UIView.animate(
+            withDuration: duration,
+            delay: 0,
+            animations: { [self] in
+                actionsSnapshot.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
+                reactionsSnapshot?.transform = CGAffineTransform(scaleX: 0.01, y: 0.01)
+                actionsSnapshot.alpha = 0.0
+                reactionsSnapshot?.alpha = 0.0
+                messageContentView.frame = messageContentViewFrame
+                blurView.effect = nil
+            },
+            completion: { [self] _ in
+                toVC.view.isHidden = false
+                fromVC.view.isHidden = false
+                messageContentView.translatesAutoresizingMaskIntoConstraints = false
+                messageContentView.removeFromSuperview()
+                messageContentViewSuperview.addSubview(messageContentView)
+                NSLayoutConstraint.activate(messageContentViewActivateConstraints)
+                toVCSnapshot?.removeFromSuperview()
+                blurView.removeFromSuperview()
+                reactionsSnapshot?.removeFromSuperview()
+                actionsSnapshot.removeFromSuperview()
+                
+                transitionContext.completeTransition(!transitionContext.transitionWasCancelled)
+            }
+        )
+    }
 }

@@ -28,10 +28,6 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
         return UIVisualEffectView(effect: blur)
             .withoutAutoresizingMaskConstraints
     }()
-
-    /// New instance of `messageContentViewClass` that is populated with `message` data.
-    open private(set) lazy var messageContentView = messageContentViewClass.init()
-        .withoutAutoresizingMaskConstraints
     
     open private(set) lazy var messageContentContainerView = UIView()
         .withoutAutoresizingMaskConstraints
@@ -181,7 +177,6 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
 
     /// Triggered when `blurView` is tapped.
     @objc open func didTapOnOverlay() {
-//        dismiss(animated: true)
-        dismiss(animated: false)
+        dismiss(animated: true)
     }
 }
