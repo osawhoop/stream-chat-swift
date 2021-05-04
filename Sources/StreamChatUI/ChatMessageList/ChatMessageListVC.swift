@@ -343,7 +343,6 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>: _ViewController,
         // of the sender as well...
         router.showMessageActionsPopUp(
             messageContentViewClass: type(of: cell).messageContentViewClass,
-            messageContentFrame: cell.messageView.superview!.convert(cell.messageView.frame, to: nil),
             messageContentView: cell.messageView,
             messageData: messageData,
             messageActionsController: actionsController,

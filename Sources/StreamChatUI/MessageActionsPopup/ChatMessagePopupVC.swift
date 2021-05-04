@@ -32,8 +32,8 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
     open private(set) lazy var messageContentContainerView = UIView()
         .withoutAutoresizingMaskConstraints
 
-    /// `messageContentView` class that is populated with `message` and shown.
-    public var messageContentViewClass: _ChatMessageContentView<ExtraData>.Type!
+    public var messageBubbleViewInsets: UIEdgeInsets = .zero
+
     /// Message data that is shown.
     public var message: _ChatMessageGroupPart<ExtraData>!
     /// Initial frame of a message.
@@ -85,14 +85,12 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
                     reactionsController.view.leadingAnchor
                         .pin(lessThanOrEqualTo: reactionsController.reactionsBubble.tailLeadingAnchor),
                     reactionsController.reactionsBubble.tailTrailingAnchor
-                        .pin(equalTo: messageContentContainerView.leadingAnchor)
-//                        .pin(equalTo: messageContentView.messageBubbleView!.leadingAnchor)
+                        .pin(equalTo: messageContentContainerView.leadingAnchor, constant: messageBubbleViewInsets.left)
                 ]
             } else {
                 constraints += [
                     reactionsController.reactionsBubble.tailLeadingAnchor
-                        .pin(equalTo: messageContentContainerView.trailingAnchor)
-//                        .pin(equalTo: messageContentView.messageBubbleView!.trailingAnchor)
+                        .pin(equalTo: messageContentContainerView.trailingAnchor, constant: -messageBubbleViewInsets.right)
                 ]
             }
         }
@@ -100,15 +98,10 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
         constraints.append(
             actionsController.view.widthAnchor.pin(equalTo: view.widthAnchor, multiplier: 0.7)
         )
-        
-//        messageContainerStackView.addArrangedSubview(messageContentView)
-//        constraints.append(
-//            messageContentView.widthAnchor.pin(equalToConstant: messageViewFrame.width)
-//        )
+
         messageContainerStackView.addArrangedSubview(messageContentContainerView)
         constraints += [
             messageContentContainerView.widthAnchor.pin(equalToConstant: messageViewFrame.width),
-            // TODO: This should be removed *after* the animation
             messageContentContainerView.heightAnchor.pin(equalToConstant: messageViewFrame.height)
         ]
 
@@ -122,12 +115,13 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
         if message.isSentByCurrentUser {
             constraints.append(
                 actionsController.view.trailingAnchor.pin(equalTo: messageContentContainerView.trailingAnchor)
-//                actionsController.view.trailingAnchor.pin(equalTo: messageContentView.trailingAnchor)
             )
         } else {
             constraints.append(
-                actionsController.view.leadingAnchor.pin(equalTo: messageContentContainerView.leadingAnchor)
-//                actionsController.view.leadingAnchor.pin(equalTo: messageContentView.messageBubbleView!.leadingAnchor)
+                actionsController.view.leadingAnchor.pin(
+                    equalTo: messageContentContainerView.leadingAnchor,
+                    constant: messageBubbleViewInsets.left
+                )
             )
         }
         
@@ -167,12 +161,6 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
         }
 
         NSLayoutConstraint.activate(constraints)
-    }
-
-    override open func updateContent() {
-//        messageContentView.message = message
-//        messagecontein.reactionsBubble?.isVisible = false
-//        messageContentView.constraintsToActivate.removeAll(where: { $0 == messageContentView.bubbleToReactionsConstraint })
     }
 
     /// Triggered when `blurView` is tapped.
