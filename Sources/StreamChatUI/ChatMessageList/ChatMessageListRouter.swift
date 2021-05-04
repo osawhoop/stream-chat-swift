@@ -19,33 +19,8 @@ open class _ChatMessageListRouter<ExtraData: ExtraDataTypes>: ChatRouter<_ChatMe
         messageActionsController: _ChatMessageActionsVC<ExtraData>,
         messageReactionsController: _ChatMessageReactionsVC<ExtraData>?
     ) {
-        transitionController.messageContentViewSuperview = messageContentView.superview
-        transitionController.messageContentView = messageContentView
-        
-        messageContentView.reactionsBubble?.isVisible = false
-        messageContentView.bubbleToReactionsConstraint?.isActive = false
-        messageContentView.constraintsToActivate.removeAll(where: { $0 == messageContentView.bubbleToReactionsConstraint })
-        var messageContentFrame = messageContentView.superview!.convert(messageContentView.frame, to: nil)
-        let allMessageContentViewSuperviewConstraints = Set(messageContentView.superview!.constraints)
-//        messageContentView.removeFromSuperview()
-        transitionController.messageContentViewActivateConstraints = Array(
-            allMessageContentViewSuperviewConstraints
-                .subtracting(
-                    messageContentView.superview!.constraints
-                        .filter { $0.firstItem === messageContentView || $0.secondItem === messageContentView }
-                )
-        )
-        NSLayoutConstraint.deactivate(transitionController.messageContentViewActivateConstraints)
-        messageContentView.setNeedsLayout()
-        messageContentView.layoutIfNeeded()
-        messageContentFrame.origin.y += messageContentFrame.height - messageContentView.frame.height
-        messageContentFrame.size = messageContentView.frame.size
-        
-        transitionController.messageContentViewFrame = messageContentFrame
-        
         let popup = _ChatMessagePopupVC<ExtraData>()
         popup.message = messageData
-        popup.messageViewFrame = messageContentFrame
         popup.actionsController = messageActionsController
         popup.reactionsController = messageReactionsController
         let bubbleView = messageContentView.messageBubbleView!
@@ -57,6 +32,9 @@ open class _ChatMessageListRouter<ExtraData: ExtraDataTypes>: ChatRouter<_ChatMe
         )
         popup.modalPresentationStyle = .overFullScreen
         popup.transitioningDelegate = transitionController
+       
+        transitionController.messageContentViewSuperview = messageContentView.superview
+        transitionController.messageContentView = messageContentView
         
         rootViewController.present(popup, animated: true)
     }
@@ -153,8 +131,7 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
     }
     
     public func transitionDuration(using transitionContext: UIViewControllerContextTransitioning?) -> TimeInterval {
-//        0.25
-        2
+        0.25
     }
     
     public func animateTransition(using transitionContext: UIViewControllerContextTransitioning) {
@@ -171,6 +148,25 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
             let fromVC = transitionContext.viewController(forKey: .from)
         else { return }
         messageContentView.isHidden = true
+        
+        messageContentViewSuperview = messageContentView.superview
+        messageContentView.reactionsBubble?.isVisible = false
+        messageContentView.bubbleToReactionsConstraint?.isActive = false
+        messageContentView.constraintsToActivate.removeAll(where: { $0 == messageContentView.bubbleToReactionsConstraint })
+        var messageContentFrame = messageContentView.superview!.convert(messageContentView.frame, to: nil)
+        let allMessageContentViewSuperviewConstraints = Set(messageContentView.superview!.constraints)
+        messageContentView.removeFromSuperview()
+        messageContentViewActivateConstraints = Array(
+            allMessageContentViewSuperviewConstraints.subtracting(messageContentViewSuperview.constraints)
+        )
+        NSLayoutConstraint.deactivate(messageContentViewActivateConstraints)
+        messageContentView.setNeedsLayout()
+        messageContentView.layoutIfNeeded()
+        messageContentFrame.origin.y += messageContentFrame.height - messageContentView.frame.height
+        messageContentFrame.size = messageContentView.frame.size
+        messageContentViewFrame = messageContentFrame
+        toVC.messageViewFrame = messageContentViewFrame
+        toVC.setUpLayout()
         
         transitionContext.containerView.addSubview(toVC.view)
         
@@ -206,7 +202,7 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
         toVC.view.isHidden = true
 
         messageContentView.isHidden = false
-        messageContentView.removeFromSuperview()
+        
         transitionContext.containerView.addSubview(messageContentView)
         messageContentView.frame = messageContentViewFrame
         messageContentView.translatesAutoresizingMaskIntoConstraints = true
@@ -226,8 +222,9 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
         UIView.animate(
             withDuration: 0.8 * duration,
             delay: 0.2 * duration,
-            usingSpringWithDamping: 0.9,
+            usingSpringWithDamping: 0.7,
             initialSpringVelocity: 4,
+            options: [.curveEaseInOut],
             animations: { [self] in
                 actionsSnapshot.transform = .identity
                 actionsSnapshot.alpha = 1.0
@@ -320,7 +317,7 @@ open class MessageActionsTransitionController<ExtraData: ExtraDataTypes>: NSObje
                 toVC.view.isHidden = false
                 fromVC.view.isHidden = false
                 messageContentView.translatesAutoresizingMaskIntoConstraints = false
-                messageContentView.reactionsBubble?.isHidden = false
+                messageContentView.updateReactionsViewIfNeeded()
                 messageContentView.removeFromSuperview()
                 messageContentViewSuperview.addSubview(messageContentView)
                 NSLayoutConstraint.activate(messageContentViewActivateConstraints)

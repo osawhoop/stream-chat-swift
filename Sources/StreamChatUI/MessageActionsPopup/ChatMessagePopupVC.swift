@@ -57,6 +57,8 @@ open class _ChatMessagePopupVC<ExtraData: ExtraDataTypes>: _ViewController, Comp
     }
 
     override open func setUpLayout() {
+        guard messageViewFrame != nil else { return }
+        
         view.embed(blurView)
 
         messageContainerStackView.axis = .vertical
