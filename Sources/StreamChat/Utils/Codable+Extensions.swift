@@ -6,13 +6,25 @@ import Foundation
 
 // MARK: - JSONDecoder Stream
 
+class LoggingDecoder: JSONDecoder {
+    override func decode<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
+        do {
+            return try super.decode(type, from: data)
+        } catch {
+            log.info("Error decoding JSON:\n\(data.debugPrettyPrintedJSON)")
+            // We don't handle/log the thrown error since the caller will handle/log it
+            throw error
+        }
+    }
+}
+
 extension JSONDecoder {
     /// A default `JSONDecoder`.
     static var `default`: JSONDecoder = stream
     
     /// A Stream Chat JSON decoder.
-    static let stream: JSONDecoder = {
-        let decoder = JSONDecoder()
+    static let stream: LoggingDecoder = {
+        let decoder = LoggingDecoder()
         
         /// A custom decoding for a date.
         decoder.dateDecodingStrategy = .custom { decoder throws -> Date in

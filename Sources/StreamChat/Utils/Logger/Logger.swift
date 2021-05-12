@@ -269,7 +269,7 @@ extension Data {
             let prettyPrintedData = try JSONSerialization.data(withJSONObject: jsonObject, options: [.prettyPrinted])
             return String(data: prettyPrintedData, encoding: .utf8) ?? "Error: Data to String decoding failed."
         } catch {
-            return "JSON decoding failed with error: \(error)"
+            return "JSON serialization failed with error: \(error)"
         }
     }
 }
