@@ -114,7 +114,7 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
         messageComposerVC.view.translatesAutoresizingMaskIntoConstraints = false
         addChildViewController(messageComposerVC, targetView: view)
 
-        addHeaderMessage()
+        addThreadRootMessageHeader()
 
         messageComposerVC.view.topAnchor.pin(equalTo: collectionView.bottomAnchor).isActive = true
         messageComposerVC.view.leadingAnchor.pin(equalTo: view.safeAreaLayoutGuide.leadingAnchor).isActive = true
@@ -159,9 +159,16 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
         keyboardObserver.unregister()
     }
 
-    /// Returns the content view type for the given message
+    /// Returns the content view class for the message at given `indexPath`
     open func cellContentClassForMessage(at indexPath: IndexPath) -> _ChatMessageContentView<ExtraData>.Type {
-        _ChatMessageContentView<ExtraData>.self
+        components.messageContentView
+    }
+
+    /// Returns the attachment view injector class for the message at given `indexPath`
+    open func attachmentViewInjectorClassForMessage(
+        at indexPath: IndexPath
+    ) -> _AttachmentViewInjector<ExtraData>.Type? {
+        attachmentViewInjectorClass(for: reply(at: indexPath))
     }
 
     /// Returns layout options for the message on given `indexPath`.
@@ -175,30 +182,17 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
             messages: AnyRandomAccessCollection(messageController.replies)
         )
     }
-    
-    func cellLayoutOptionsForMessage(
-        at indexPath: IndexPath,
-        messages: AnyRandomAccessCollection<_ChatMessage<ExtraData>>
-    ) -> ChatMessageLayoutOptions {
-        guard let channel = channelController.channel else { return [] }
-
-        var layoutOptions = components
-            .messageLayoutOptionsResolver
-            .optionsForMessage(at: indexPath, in: channel, with: messages)
-        layoutOptions.remove(.threadInfo)
-        return layoutOptions
-    }
 
     open func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         messageController.replies.count
     }
 
     open func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let message = messageController.replies[indexPath.item]
+        let message = reply(at: indexPath)
 
         let cell: _СhatMessageCollectionViewCell<ExtraData> = self.collectionView.dequeueReusableCell(
             contentViewClass: cellContentClassForMessage(at: indexPath),
-            attachmentViewInjectorType: nil,
+            attachmentViewInjectorType: attachmentViewInjectorClassForMessage(at: indexPath),
             layoutOptions: cellLayoutOptionsForMessage(at: indexPath),
             for: indexPath
         )
@@ -244,15 +238,13 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
     }
 
     /// Adds thread parent message on top of collection view.
-    open func addHeaderMessage() {
+    open func addThreadRootMessageHeader() {
         if let message = messageController.message {
-            let messageView = _ChatMessageContentView<ExtraData>().withoutAutoresizingMaskConstraints
-            let layoutOptions = cellLayoutOptionsForMessage(
-                at: IndexPath(item: 0, section: 0),
-                messages: AnyRandomAccessCollection([message])
+            let messageView = threadRootMessageContentClass.init().withoutAutoresizingMaskConstraints
+            messageView.setUpLayoutIfNeeded(
+                options: threadRootMessageLayoutOptions,
+                attachmentViewInjectorType: threadRootMessageAttachmentViewInjectorClass
             )
-
-            messageView.setUpLayoutIfNeeded(options: layoutOptions, attachmentViewInjectorType: nil)
             collectionView.addSubview(messageView)
             messageView.content = message
 
@@ -270,6 +262,28 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
             messageView.topAnchor.pin(equalTo: collectionView.topAnchor, constant: -topInset).isActive = true
             messageView.pin(anchors: [.leading, .trailing], to: collectionView.safeAreaLayoutGuide)
         }
+    }
+
+    /// Returns the layout options for thread root message header.
+    open var threadRootMessageLayoutOptions: ChatMessageLayoutOptions {
+        guard let threadRootMessage = messageController.message else { return [] }
+
+        return cellLayoutOptionsForMessage(
+            at: .init(item: 0, section: 0),
+            messages: AnyRandomAccessCollection([threadRootMessage])
+        )
+    }
+
+    /// Returns the attachment view injector class for thread root message header.
+    open var threadRootMessageAttachmentViewInjectorClass: _AttachmentViewInjector<ExtraData>.Type? {
+        guard let threadRootMessage = messageController.message else { return nil }
+
+        return attachmentViewInjectorClass(for: threadRootMessage)
+    }
+
+    /// Returns the content view class for thread root message header.
+    open var threadRootMessageContentClass: _ChatMessageContentView<ExtraData>.Type {
+        components.messageContentView
     }
 
     /// Handles long press action on collection view.
@@ -426,5 +440,40 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
     open func messageContentViewDidTapOnQuotedMessage(_ indexPath: IndexPath?) {
         guard let indexPath = indexPath else { return log.error("IndexPath is not available") }
         print(#function, indexPath)
+    }
+}
+
+extension _ChatThreadVC {
+    func reply(at indexPath: IndexPath) -> _ChatMessage<ExtraData> {
+        messageController.replies[indexPath.item]
+    }
+
+    func attachmentViewInjectorClass(for message: _ChatMessage<ExtraData>) -> _AttachmentViewInjector<ExtraData>.Type? {
+        let attachmentCounts = message.attachmentCounts
+
+        if attachmentCounts.keys.contains(.image) {
+            return components.galleryAttachmentInjector
+        } else if attachmentCounts.keys.contains(.giphy) {
+            return components.giphyAttachmentInjector
+        } else if attachmentCounts.keys.contains(.file) {
+            return components.filesAttachmentInjector
+        } else if attachmentCounts.keys.contains(.linkPreview) {
+            return components.linkAttachmentInjector
+        } else {
+            return nil
+        }
+    }
+
+    func cellLayoutOptionsForMessage(
+        at indexPath: IndexPath,
+        messages: AnyRandomAccessCollection<_ChatMessage<ExtraData>>
+    ) -> ChatMessageLayoutOptions {
+        guard let channel = channelController.channel else { return [] }
+
+        var layoutOptions = components
+            .messageLayoutOptionsResolver
+            .optionsForMessage(at: indexPath, in: channel, with: messages)
+        layoutOptions.remove(.threadInfo)
+        return layoutOptions
     }
 }
