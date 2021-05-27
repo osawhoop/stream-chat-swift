@@ -106,7 +106,7 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, ThemeProvi
 
     /// Shows the bubble around message reactions.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options containing `.reactions`.
-    public private(set) var reactionsBubbleView: ChatReactionsBubbleView?
+    public private(set) var reactionsBubbleView: ReactionsBubbleView?
 
     /// Shows the # of thread replies on the message.
     /// Exists if `layout(options: MessageLayoutOptions)` was invoked with the options containing `.threadInfo`.
@@ -414,7 +414,7 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, ThemeProvi
             .toTrailing
 
         // Reactions view
-        reactionsBubbleView?.tailDirection = content
+        reactionsBubbleView?.content = content
             .map { $0.isSentByCurrentUser ? .toTrailing : .toLeading }
         reactionsView?.content = content.map {
             .init(
@@ -579,10 +579,11 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, ThemeProvi
 
     /// Instantiates, configures and assigns `reactionsBubbleView` when called for the first time.
     /// - Returns: The `reactionsBubbleView` subview.
-    open func createReactionsBubbleView() -> ChatReactionsBubbleView {
+    open func createReactionsBubbleView() -> ReactionsBubbleView {
         if reactionsBubbleView == nil {
-            // TODO: view type should be taken from `components` once `_ReactionsBubbleView` is audited
-            reactionsBubbleView = ChatReactionsBubbleView()
+            reactionsBubbleView = components
+                .reactionsBubbleView
+                .init()
                 .withoutAutoresizingMaskConstraints
         }
         return reactionsBubbleView!

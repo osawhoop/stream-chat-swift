@@ -116,8 +116,7 @@ public struct _Components<ExtraData: ExtraDataTypes> {
     public var filesAttachmentInjector: _FilesAttachmentViewInjector<ExtraData>.Type = _FilesAttachmentViewInjector<ExtraData>.self
 
     /// The view that shows reactions bubble.
-    public var reactionsBubbleView: _ChatMessageReactionsBubbleView<ExtraData>.Type =
-        _ChatMessageDefaultReactionsBubbleView<ExtraData>.self
+    public var reactionsBubbleView: ReactionsBubbleView.Type = ReactionsBubbleView.self
 
     /// The view that shows reactions list in a bubble.
     public var reactionsView: _ChatMessageReactionsView<ExtraData>.Type = _ChatMessageReactionsView<ExtraData>.self
@@ -191,6 +190,12 @@ public struct _Components<ExtraData: ExtraDataTypes> {
     /// The view that shows a read/unread status of the last message in channel.
     public var channelReadStatusView: ChatChannelReadStatusCheckmarkView.Type =
         ChatChannelReadStatusCheckmarkView.self
+
+    // MARK: - Message actions pop-up components
+
+    /// The view that shows reactions bubble on message actions pop-up.
+    public var popUpReactionsBubbleView: _ChatMessageReactionsBubbleView<ExtraData>.Type =
+        _ChatMessageDefaultReactionsBubbleView<ExtraData>.self
 
     // MARK: - Message composer components
 
