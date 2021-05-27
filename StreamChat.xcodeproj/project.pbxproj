@@ -548,6 +548,8 @@
 		888E8C59252B56A100195E03 /* MemberController_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 888E8C58252B56A100195E03 /* MemberController_Tests.swift */; };
 		889062432548387D00E1898E /* MessageReactionsMiddleware_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 889062422548387D00E1898E /* MessageReactionsMiddleware_Tests.swift */; };
 		8893FF16265FC60B00DD62BE /* ChatMessageErrorIndicator_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8893FF15265FC60B00DD62BE /* ChatMessageErrorIndicator_Tests.swift */; };
+		8893FF60265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8893FF5F265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift */; };
+		8893FF61265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8893FF5F265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift */; };
 		8899BC3F2542FFA1003CB98B /* MessageReactionPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8899BC3E2542FFA1003CB98B /* MessageReactionPayload.swift */; };
 		8899BC47254305F8003CB98B /* MessageReactionRequestPayload.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8899BC46254305F8003CB98B /* MessageReactionRequestPayload.swift */; };
 		8899BC4D25430E40003CB98B /* MessageReactionDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8899BC4C25430E40003CB98B /* MessageReactionDTO.swift */; };
@@ -1760,6 +1762,7 @@
 		888E8C58252B56A100195E03 /* MemberController_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemberController_Tests.swift; sourceTree = "<group>"; };
 		889062422548387D00E1898E /* MessageReactionsMiddleware_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReactionsMiddleware_Tests.swift; sourceTree = "<group>"; };
 		8893FF15265FC60B00DD62BE /* ChatMessageErrorIndicator_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatMessageErrorIndicator_Tests.swift; sourceTree = "<group>"; };
+		8893FF5F265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatThreadArrowView_Tests.swift; sourceTree = "<group>"; };
 		8899BC3E2542FFA1003CB98B /* MessageReactionPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReactionPayload.swift; sourceTree = "<group>"; };
 		8899BC46254305F8003CB98B /* MessageReactionRequestPayload.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReactionRequestPayload.swift; sourceTree = "<group>"; };
 		8899BC4C25430E40003CB98B /* MessageReactionDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageReactionDTO.swift; sourceTree = "<group>"; };
@@ -4423,6 +4426,7 @@
 				A39A8AE6263825F4003453D9 /* ChatMessageLayoutOptionsResolver.swift */,
 				8830518D263038190069D731 /* ChatReactionsBubbleView.swift */,
 				883051C72630579D0069D731 /* ChatThreadArrowView.swift */,
+				8893FF5F265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift */,
 				88A11B2F2590CC860000AC24 /* ChatMessageErrorIndicator.swift */,
 				8893FF15265FC60B00DD62BE /* ChatMessageErrorIndicator_Tests.swift */,
 			);
@@ -5397,6 +5401,7 @@
 				F86A11142616184300D9FE19 /* ChatMessagePopupVC_Tests.swift in Sources */,
 				AD71131225F138D500932AEE /* ChatUserAvatarView_Tests.swift in Sources */,
 				7969D20225F15E3D00C66F87 /* TestRunnerEnvironment.swift in Sources */,
+				8893FF61265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift in Sources */,
 				79158D5325F15BF900186102 /* iOS13TestCase.swift in Sources */,
 				AD154C6D25DC3BA000850925 /* ChatCommandSuggestionView_Tests.swift in Sources */,
 				ADFCCD7625C9D4D10024505D /* SnapshotVariant.swift in Sources */,
@@ -5441,6 +5446,7 @@
 				804B127124E712F1002B00EA /* SimpleChannelsViewController.swift in Sources */,
 				DAD8A8A42507E1C400D05282 /* CombineSimpleChannelsViewController.swift in Sources */,
 				80437AA3252E519E000920A3 /* Configuration.swift in Sources */,
+				8893FF60265FD5D100DD62BE /* ChatThreadArrowView_Tests.swift in Sources */,
 				804B126924E6C820002B00EA /* LoginViewController.swift in Sources */,
 				8008C19D24F7EF2400F5BCCE /* ChannelListView.swift in Sources */,
 				8008C1A024F8517000F5BCCE /* UITableViewController+KeyboardAvoidance.swift in Sources */,

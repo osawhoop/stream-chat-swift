@@ -264,11 +264,9 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, ThemeProvi
             ]
 
             if options.contains(.flipped) {
-                arrowView.direction = .toLeading
                 threadInfoContainer!.addArrangedSubviews(arrangedSubviews.reversed())
                 threadInfoContainer!.setCustomSpacing(0, after: threadAvatarView)
             } else {
-                arrowView.direction = .toTrailing
                 threadInfoContainer!.addArrangedSubviews(arrangedSubviews)
                 threadInfoContainer!.setCustomSpacing(0, after: arrowView)
             }
@@ -411,6 +409,10 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, ThemeProvi
             placeholder: appearance.images.userAvatarPlaceholder4
         )
 
+        threadArrowView?.content = layoutOptions?.contains(.flipped) == true ?
+            .toLeading :
+            .toTrailing
+
         // Reactions view
         reactionsBubbleView?.tailDirection = content
             .map { $0.isSentByCurrentUser ? .toTrailing : .toLeading }
@@ -505,8 +507,9 @@ open class _ChatMessageContentView<ExtraData: ExtraDataTypes>: _View, ThemeProvi
     /// - Returns: The `threadArrowView` subview.
     open func createThreadArrowView() -> ChatThreadArrowView {
         if threadArrowView == nil {
-            // TODO: view type should be taken from `components` once `_ThreadArrowView` is audited
-            threadArrowView = ChatThreadArrowView()
+            threadArrowView = components
+                .messageThreadArrowView
+                .init()
                 .withoutAutoresizingMaskConstraints
         }
         return threadArrowView!

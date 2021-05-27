@@ -5,42 +5,32 @@
 import StreamChat
 import UIKit
 
+/// A view that shows an arrow from message bubble to thread replies info/thread reply button.
 open class ChatThreadArrowView: _View, AppearanceProvider {
+    /// A type representing arrow direction.
     public enum Direction {
         case toTrailing
         case toLeading
     }
 
-    override public class var layerClass: AnyClass {
-        CAShapeLayer.self
+    /// A direction an arrow is drawn.
+    public var content: Direction? {
+        didSet { updateContentIfNeeded() }
     }
 
+    /// A view layer which has a shape of an arrow.
     public var shape: CAShapeLayer {
         layer as! CAShapeLayer
     }
 
-    private var isLeftToRight: Bool {
+    /// Returns the path used to draw an arrow.
+    open var arrowPath: CGPath? {
+        guard let direction = content else { return nil }
+
         let isLeftToRightWithTrailing = direction == .toTrailing && traitCollection.layoutDirection == .leftToRight
         let isRightToLeftWithLeading = direction == .toLeading && traitCollection.layoutDirection == .rightToLeft
-        return isLeftToRightWithTrailing || isRightToLeftWithLeading
-    }
+        let isLeftToRight = isLeftToRightWithTrailing || isRightToLeftWithLeading
 
-    public var direction: Direction = .toTrailing {
-        didSet {
-            setNeedsDisplay()
-        }
-    }
-
-    override open func setUpAppearance() {
-        super.setUpAppearance()
-
-        shape.contentsScale = layer.contentsScale
-        shape.strokeColor = appearance.colorPalette.border.cgColor
-        shape.fillColor = nil
-        shape.lineWidth = 1
-    }
-
-    override open func draw(_ rect: CGRect) {
         let corner: CGFloat = 16
         let height = bounds.height / 2
         let lineCenter = shape.lineWidth / 2
@@ -55,7 +45,32 @@ open class ChatThreadArrowView: _View, AppearanceProvider {
             to: CGPoint(x: endX, y: height),
             control: CGPoint(x: startX, y: height)
         )
-        shape.path = path
+
+        return path
+    }
+
+    override open func setUpAppearance() {
+        super.setUpAppearance()
+
+        shape.contentsScale = layer.contentsScale
+        shape.strokeColor = appearance.colorPalette.border.cgColor
+        shape.fillColor = nil
+        shape.lineWidth = 1
+    }
+
+    override open func updateContent() {
+        super.updateContent()
+
+        setNeedsDisplay()
+    }
+
+    override open func draw(_ rect: CGRect) {
         super.draw(rect)
+
+        shape.path = arrowPath
+    }
+
+    override public class var layerClass: AnyClass {
+        CAShapeLayer.self
     }
 }
