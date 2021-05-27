@@ -227,7 +227,13 @@ var streamChatSourcesExcluded: [String] { [
 var streamChatUIFilesExcluded: [String] { [
     "ChatMessageList/TypingIndicatorView_Tests.swift",
     "ChatMessageList/ChatMessageListCollectionViewLayout_Tests.swift",
+    "ChatMessageList/ChatMessage/ChatMessageErrorIndicator_Tests.swift",
+    "ChatMessageList/ChatMessage/ChatThreadArrowView_Tests.swift",
     "ChatMessageList/ChatMessage/ChatMessageContentView_Tests.swift",
+    "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageErrorIndicator_Tests/test_appearanceCustomization_usingSubclassing.default-dark.png",
+    "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageErrorIndicator_Tests/test_appearanceCustomization_usingAppearance.default-dark.png",
+    "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageErrorIndicator_Tests/test_appearanceCustomization_usingAppearance.default-light.png",
+    "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageErrorIndicator_Tests/test_appearanceCustomization_usingSubclassing.default-light.png",
     "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageContentView_Tests/test_appearance.default-light-flipped-bubble-continuousBubble-text-quotedMessage-reactions.png",
     "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageContentView_Tests/test_appearance.default-light-flipped-bubble-continuousBubble-text-quotedMessage-threadInfo-reactions.png",
     "ChatMessageList/ChatMessage/__Snapshots__/ChatMessageContentView_Tests/test_appearanceCustomization_usingSubclassing.small-dark.png",
