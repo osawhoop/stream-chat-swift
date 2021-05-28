@@ -31,4 +31,9 @@ bash Scripts/deleteDuplicates.sh "Documentation/$TARGET_DIRECTORY" "$TARGET_DIRE
 
 rm -rf Scripts/StreamChat_folder_directories.txt
 
+if [[ "$TARGET" = "StreamChatUI" ]]; then
+    bash Scripts/addImagesToDocumentation.sh
+fi
+
+
 echo "Documentation for $TARGET generated successfully. Please do check Documentations folder "
