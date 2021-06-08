@@ -45,6 +45,25 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         get { _contentInset }
     }
     
+    // In some cases updates coming one by one might require scrolling to bottom.
+    //
+    // Scheduling the action and canceling the previous one ensures the scroll to bottom
+    // is done only once.
+    //
+    // Having a delay gives layout a chance to calculate the correct size for bottom cells
+    // so they are fully visible when scroll to bottom happens.
+    private var scrollToBottomAction: DispatchWorkItem? {
+        didSet {
+            oldValue?.cancel()
+            if let action = scrollToBottomAction {
+                DispatchQueue.main.asyncAfter(
+                    deadline: .now() + .milliseconds(200),
+                    execute: action
+                )
+            }
+        }
+    }
+
     public required init(layout: ChatMessageListCollectionViewLayout) {
         super.init(frame: .zero, collectionViewLayout: layout)
     }
