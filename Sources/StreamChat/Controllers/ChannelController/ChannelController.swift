@@ -625,7 +625,7 @@ public extension _ChatChannelController {
     ///
     func loadPreviousMessages(
         before messageId: MessageId? = nil,
-        limit: Int = 25,
+        limit: Int = 1,
         completion: ((Error?) -> Void)? = nil
     ) {
         /// Perform action only if channel is already created on backend side and have a valid `cid`.

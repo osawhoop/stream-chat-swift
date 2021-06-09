@@ -201,6 +201,8 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         with changes: [ListChange<_ChatMessage<ExtraData>>],
         completion: ((Bool) -> Void)? = nil
     ) {
+        let uuid = UUID()
+        debugPrint("START \(uuid)")
         // Before committing the changes, we need to check if were scrolled
         // to the bottom, if yes, we should stay scrolled to the bottom
         var shouldScrollToBottom = isLastCellFullyVisible
@@ -213,12 +215,16 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
                         // When the message from current user comes we should scroll to bottom
                         shouldScrollToBottom = true
                     }
+                    print("insert at \(index)")
                     insertItems(at: [index])
                 case let .move(_, fromIndex, toIndex):
+                    print("move from \(fromIndex) to \(toIndex)")
                     moveItem(at: fromIndex, to: toIndex)
                 case let .remove(_, index):
+                    print("delete at \(index)")
                     deleteItems(at: [index])
                 case let .update(_, index):
+                    print("update at \(index)")
                     reloadItems(at: [index])
                 }
             }
@@ -235,6 +241,8 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
                     self?.scrollToMostRecentMessage()
                 }
             }
+            
+            debugPrint("END \(uuid)")
 
             completion?(flag)
         }

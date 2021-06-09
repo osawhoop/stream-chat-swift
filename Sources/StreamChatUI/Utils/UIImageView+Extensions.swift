@@ -25,6 +25,9 @@ extension UIImageView {
         components: _Components<ExtraData>,
         completion: ImageTask.Completion? = nil
     ) -> ImageTask? {
+        if let url = url, url.absoluteString.contains("./static") {
+            return nil
+        }
         guard !SystemEnvironment.isTests else {
             // When running tests, we load the images synchronously
             if let url = url {

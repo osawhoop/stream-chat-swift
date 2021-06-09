@@ -45,7 +45,7 @@ public struct ChatClientConfig {
     /// For example, when you change your custom `ExtraData` types, the cached data can't be decoded, and the cache has to be
     /// flushed.
     ///
-    public var shouldFlushLocalStorageOnStart: Bool = false
+    public var shouldFlushLocalStorageOnStart: Bool = true
     
     /// Advanced settings for the local caching and model serialization.
     public var localCaching = LocalCaching()

@@ -174,7 +174,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         view.backgroundColor = appearance.colorPalette.background
         
         collectionView.backgroundColor = appearance.colorPalette.background
-        collectionView.contentInset.top += max(collectionView.layoutMargins.right, collectionView.layoutMargins.left)
+//        collectionView.contentInset.top += max(collectionView.layoutMargins.right, collectionView.layoutMargins.left)
 
         navigationItem.titleView = titleView
     }
@@ -499,10 +499,10 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     /// - Parameter typingMembers: typing members gotten from `channelController`
     open func showTypingIndicator(typingMembers: [_ChatChannelMember<ExtraData.User>]) {
         if typingIndicatorView.isHidden {
-            Animate {
-                self.collectionView.contentInset.bottom += self.typingIndicatorViewHeight
-                self.collectionView.scrollIndicatorInsets.bottom += self.typingIndicatorViewHeight
-            }
+//            Animate {
+//                self.collectionView.contentInset.bottom += self.typingIndicatorViewHeight
+//                self.collectionView.scrollIndicatorInsets.bottom += self.typingIndicatorViewHeight
+//            }
 
             if collectionView.isLastCellVisible {
                 scrollToMostRecentMessage()
@@ -527,10 +527,10 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
 
         typingIndicatorView.isHidden = true
 
-        Animate {
-            self.collectionView.contentInset.bottom -= self.typingIndicatorViewHeight
-            self.collectionView.scrollIndicatorInsets.bottom -= self.typingIndicatorViewHeight
-        }
+//        Animate {
+//            self.collectionView.contentInset.bottom -= self.typingIndicatorViewHeight
+//            self.collectionView.scrollIndicatorInsets.bottom -= self.typingIndicatorViewHeight
+//        }
     }
     
     // MARK: - _ChatMessageActionsVCDelegate

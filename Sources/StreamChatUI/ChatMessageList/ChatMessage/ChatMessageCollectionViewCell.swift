@@ -58,6 +58,7 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
     override public func preferredLayoutAttributesFitting(
         _ layoutAttributes: UICollectionViewLayoutAttributes
     ) -> UICollectionViewLayoutAttributes {
+        debugPrint("cell: preferredLayoutAttributesFitting")
         let preferredAttributes = super.preferredLayoutAttributesFitting(layoutAttributes)
 
         let targetSize = CGSize(
