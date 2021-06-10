@@ -173,6 +173,7 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         }
 
         if super.contentInset != adjustedContentInset {
+            print("✅ Updating content inset: \(adjustedContentInset.top)")
             super.contentInset = adjustedContentInset
         }
         

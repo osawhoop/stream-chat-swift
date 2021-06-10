@@ -132,7 +132,7 @@ public struct _ChannelListQuery<ExtraData: ChannelExtraData>: Encodable {
         filter: Filter<_ChannelListFilterScope<ExtraData>>,
         sort: [Sorting<ChannelListSortingKey>] = [],
         pageSize: Int = .channelsPageSize,
-        messagesLimit: Int = .messagesPageSize
+        messagesLimit: Int = 10 // .messagesPageSize
     ) {
         self.filter = filter
         self.sort = sort.appendingCidSortingKey()

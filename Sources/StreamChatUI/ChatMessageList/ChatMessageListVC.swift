@@ -118,7 +118,10 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         userSuggestionSearchController.search(term: nil)
         
         channelController.setDelegate(self)
-        channelController.synchronize()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            self.channelController.synchronize()
+        }
         
         if channelController.channel?.isDirectMessageChannel == true {
             timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in

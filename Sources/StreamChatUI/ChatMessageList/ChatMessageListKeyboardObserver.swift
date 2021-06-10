@@ -53,22 +53,26 @@ open class ChatMessageListKeyboardObserver {
 
         let indexPathNearestToKeyboard = collectionView.indexPathsForVisibleItems.sorted().first
 
+//        containerView.layoutIfNeeded()
+        
         UIView.animate(
             withDuration: keyboardAnimationDuration,
             delay: 0.0,
             options: UIView.AnimationOptions(rawValue: keyboardAnimationCurve),
             animations: { [weak self] in
                 
-                UIView.performWithoutAnimation {
-                    self?.collectionView.layoutIfNeeded()
-                }
-                
+                self?.containerView.setNeedsLayout()
                 self?.containerView.layoutIfNeeded()
-
-                let isKeyboardShowing = intersectedKeyboardHeight > 0
-                if let indexPathNearestToKeyboard = indexPathNearestToKeyboard, isKeyboardShowing {
-                    self?.collectionView.scrollToItem(at: indexPathNearestToKeyboard, at: .bottom, animated: false)
-                }
+                
+//                UIView.performWithoutAnimation {
+//                    self?.collectionView.layoutIfNeeded()
+//                }
+                
+//
+//                let isKeyboardShowing = intersectedKeyboardHeight > 0
+//                if let indexPathNearestToKeyboard = indexPathNearestToKeyboard, isKeyboardShowing {
+//                    self?.collectionView.scrollToItem(at: indexPathNearestToKeyboard, at: .bottom, animated: false)
+//                }
             }
         )
     }

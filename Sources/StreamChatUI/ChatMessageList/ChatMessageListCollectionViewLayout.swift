@@ -70,8 +70,6 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
             height: currentItems.first?.maxY ?? 0
         )
         
-        debugPrint("collectionViewContentSize \(size)")
-        
         return size
     }
 
@@ -109,7 +107,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     override open func invalidateLayout(with context: UICollectionViewLayoutInvalidationContext) {
         preBatchUpdatesCall = context.invalidateDataSourceCounts &&
             !context.invalidateEverything
-        print("invalidateLayout context: \(context), preBatchUpdatesCall: \(preBatchUpdatesCall)")
+        // print("invalidateLayout context: \(context), preBatchUpdatesCall: \(preBatchUpdatesCall)")
         super.invalidateLayout(with: context)
     }
 
@@ -118,7 +116,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes
     ) -> Bool {
         let heightIsChanged = preferredAttributes.size.height != originalAttributes.size.height
-        print("shouldInvalidateLayout preferredAttributes: \(heightIsChanged)")
+        // print("shouldInvalidateLayout preferredAttributes: \(heightIsChanged)")
         return heightIsChanged
     }
 
@@ -126,7 +124,9 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         forPreferredLayoutAttributes preferredAttributes: UICollectionViewLayoutAttributes,
         withOriginalAttributes originalAttributes: UICollectionViewLayoutAttributes
     ) -> UICollectionViewLayoutInvalidationContext {
-        print("invalidationContext preferredAttributes: \(preferredAttributes.frame), withOriginalAttributes: \(originalAttributes.frame)")
+        print(
+            "\(originalAttributes.indexPath)| invalidationContext preferredAttributes: \(preferredAttributes.frame), withOriginalAttributes: \(originalAttributes.frame)"
+        )
 
         let invalidationContext = super.invalidationContext(
             forPreferredLayoutAttributes: preferredAttributes,
@@ -145,7 +145,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
             currentItems[i].offset += delta
         }
         invalidationContext.contentSizeAdjustment = CGSize(width: 0, height: delta)
-        print("invalidationContextForPreferredAttributes will adjust content size: \(invalidationContext.contentSizeAdjustment)")
+//        print("invalidationContextForPreferredAttributes will adjust content size: \(invalidationContext.contentSizeAdjustment)")
 
         // when we scrolling up and item above screens top edge changes its attributes it will push all items below it to bottom
         // making unpleasant jump. To prevent it we need to adjust current content offset by item delta
@@ -155,37 +155,43 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
             guard let cv = collectionView else { return false }
             return cv.isDragging || cv.isDecelerating
         }()
+        
         if isSizingElementAboveTopEdge || !isScrolling {
             invalidationContext.contentOffsetAdjustment = CGPoint(x: 0, y: delta)
         }
+        
+        print("\(idx) -> \(delta)")
 
         return invalidationContext
     }
     
     override open func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
-        print("shouldInvalidateLayout forBoundsChange old: \(collectionView?.bounds ?? .zero), new: \(newBounds)")
+        // print("shouldInvalidateLayout forBoundsChange old: \(collectionView?.bounds ?? .zero), new: \(newBounds)")
         
-        return collectionView.map { $0.bounds.size != newBounds.size } ?? true
+        collectionView.map { $0.bounds.size != newBounds.size } ?? true
     }
     
     override open func invalidationContext(forBoundsChange newBounds: CGRect) -> UICollectionViewLayoutInvalidationContext {
-        print("invalidationContext forBoundsChange: \(newBounds)")
-
         let context = super.invalidationContext(forBoundsChange: newBounds)
         
         guard let collectionView = collectionView else { return context }
-        
-        let delta = newBounds.height - collectionView.bounds.height
-        
-        // If collectionView is shrinking and most recent message is visible, we will make sure it is still fully visible,
-        // but if the conversation is short and not scrollable, this adjustment would be unwanted
-        if delta < 0,
-           collectionView.indexPathsForVisibleItems.contains(IndexPath(item: 0, section: 0)),
-           collectionView.contentOffset.y > -collectionView.contentInset.top {
-            context.contentOffsetAdjustment = CGPoint(x: 0, y: -delta)
-            print("invalidationContextforBoundsChange will adjust offset: \(context.contentOffsetAdjustment)")
-        }
 
+        // The distance from the stable position at the bottom of the CV
+        let distanceFromBottom = collectionView.contentSize.height
+            - collectionView.contentOffset.y
+            - collectionView.contentInset.bottom
+            - collectionView.frame.height
+        
+        // Height difference
+        let delta = newBounds.height - collectionView.bounds.height
+
+        // Apply the difference only if:
+        //   a) the collection view shrinks
+        //   b) we're not at the very bottom of the list
+        if delta < 0 || distanceFromBottom > 1 {
+            context.contentOffsetAdjustment = CGPoint(x: 0, y: -delta)
+        }
+        
         return context
     }
 
@@ -197,12 +203,13 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         // used to determine what contentOffset should be restored after batch updates
         if !updateItems
             .contains(where: { $0.updateAction == .insert && $0.indexPathAfterUpdate == IndexPath(item: 0, section: 0) }) {
-            restoreOffset = collectionView.map { collectionViewContentSize.height - $0.contentOffset.y }
+            restoreOffset = collectionView
+                .map { collectionViewContentSize.height - $0.contentOffset.y - collectionView!.bounds.height }
         }
         
         let delete: (UICollectionViewUpdateItem) -> Void = { update in
             guard let ip = update.indexPathBeforeUpdate else { return }
-            print("prepare for delete at \(ip)")
+            // print("prepare for delete at \(ip)")
             let idx = ip.item
             let item = self.previousItems[idx]
             self.disappearingItems.insert(ip)
@@ -225,7 +232,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
 
         let insert: (UICollectionViewUpdateItem) -> Void = { update in
             guard let ip = update.indexPathAfterUpdate else { return }
-            print("prepare for insert at \(ip)")
+            // print("prepare for insert at \(ip)")
             self.appearingItems.insert(ip)
             let idx = ip.item
             let item: LayoutItem
@@ -263,7 +270,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     
     /// Only public by design, if you need to override this method override `_prepare(forCollectionViewUpdates:)`
     override public func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
-        print("prepare forCollectionViewUpdates")
+        // print("prepare forCollectionViewUpdates")
 
         // In Xcode 12.5 it is impossible to use own `updateItems` - our solution with `UICollectionViewUpdateItem` subclass stopped working
         // (Apple is probably checking some private API and our customized getters are not called),
@@ -273,25 +280,23 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     }
 
     override open func finalizeCollectionViewUpdates() {
-        print("finalizeCollectionViewUpdates")
+        // print("finalizeCollectionViewUpdates")
 
         appearingItems.removeAll()
         disappearingItems.removeAll()
-        animatingAttributes.removeAll()
+//        animatingAttributes.removeAll()
         super.finalizeCollectionViewUpdates()
         restoreOffset = nil
         previousItems = currentItems
     }
     
     override open func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
-        print("targetContentOffset forProposedContentOffset \(proposedContentOffset)")
-
         guard let collectionView = self.collectionView else { return proposedContentOffset }
-        // if we have any content offset to restore and if the collection view has enough items to scroll, restore it
-        if let restore = restoreOffset, collectionView.contentSize.height > collectionView.bounds.height {
-            print("targetContentOffset will resore y: \(collectionViewContentSize.height - restore)")
-            return CGPoint(x: 0, y: collectionViewContentSize.height - restore)
-        }
+
+        guard let restoreOffset = self.restoreOffset else { return proposedContentOffset }
+        
+        var proposedContentOffset = proposedContentOffset
+        proposedContentOffset.y = collectionViewContentSize.height - restoreOffset - collectionView.bounds.height
         return proposedContentOffset
     }
 
@@ -300,7 +305,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     override open func prepare() {
         super.prepare()
         
-        print("prepare")
+        // print("prepare")
 
         guard !didPerformInitialLayout else { return }
         didPerformInitialLayout = true
@@ -312,7 +317,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         let count = cv.numberOfItems(inSection: 0)
         guard count > 0 else { return }
         
-        print("prepare create initial attributes for \(count) elements")
+        // print("prepare create initial attributes for \(count) elements")
 
         let height = estimatedItemHeight * CGFloat(count) + spacing * CGFloat(count - 1)
         var offset: CGFloat = height
@@ -328,9 +333,9 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     }
 
     override open func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
-        print("layoutAttributesForElements \(rect)")
+        // print("layoutAttributesForElements \(rect)")
         
-        return currentItems
+        currentItems
             .enumerated()
             .compactMap { index, item in
                 let indexPath = IndexPath(item: index, section: 0)
@@ -360,68 +365,89 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         let idx = indexPath.item
         
         let attributes = currentItems[idx].attribute(for: idx, width: currentCollectionViewWidth)
-        debugPrint("layoutAttributesForItem at \(indexPath), frame: \(attributes.frame))")
+        print("layoutAttributesForItem at \(indexPath), frame: \(attributes.frame))")
         return attributes
     }
 
     override open func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
         let itemIndex = itemIndexPath.item
-        print("initialLayoutAttributesForAppearingItem \(itemIndexPath)")
+        // print("initialLayoutAttributesForAppearingItem \(itemIndexPath)")
 
         if appearingItems.contains(itemIndexPath) {
             // this is item that have been inserted into collection view in current batch update
-            let attributes = layoutAttributesForItem(at: itemIndexPath)
+            let attributes = layoutAttributesForItem(at: itemIndexPath)?
+                .copy() as? UICollectionViewLayoutAttributes
+
             animatingAttributes[itemIndexPath] = attributes
-            debugPrint("initialLayoutAttributesForAppearingItem at \(itemIndexPath) (insert), frame: \(attributes?.frame ?? .zero))")
+            attributes?.isHidden = true
+            
+            // print("initialLayoutAttributesForAppearingItem at \(itemIndexPath) (insert), frame: \(attributes?.frame ?? .zero))")
             return attributes
         } else if
             let movedItemId = idForItem(at: itemIndex),
-            let oldItemIndex = oldIndexForItem(with: movedItemId)
-        {
+            let oldItemIndex = oldIndexForItem(with: movedItemId) {
             // this is item that already presented in collection view, but collection view decided to reload it
             // by removing and inserting it back (4head)
             // to properly animate possible change of such item, we need to return its attributes BEFORE batch update
             let itemStaysInPlace = itemIndex == oldItemIndex
-                        
+
             let attributes = (itemStaysInPlace ? currentItems[itemIndex] : previousItems[oldItemIndex])
                 .attribute(for: itemStaysInPlace ? itemIndex : oldItemIndex, width: currentCollectionViewWidth)
-            print("initialLayoutAttributesForAppearingItem (reload) itemStaysInPlace: \(itemStaysInPlace), frame: \(attributes.frame)")
+                .copy() as! UICollectionViewLayoutAttributes
+
+            attributes.isHidden = true
+            attributes.transform = CGAffineTransform(
+                translationX: 0,
+                y: (collectionView!.contentSize.height - collectionViewContentSize.height)
+            )
+//            attributes.alpha = 0
+//            attributes.transform = CGAffineTransform(rotationAngle: 20)
+            
+            print(
+                "\(itemIndex) initialLayoutAttributesForAppearingItem (reload) itemStaysInPlace: \(itemStaysInPlace), frame: \(attributes.frame)"
+            )
+//            return nil
+            
             return attributes
+            
         } else {
             let s = super.initialLayoutAttributesForAppearingItem(at: itemIndexPath)
-            print("super \(s?.frame ?? .zero)")
+            // print("super \(s?.frame ?? .zero)")
             return s
         }
     }
 
     override open func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        print("finalLayoutAttributesForDisappearingItem \(itemIndexPath)")
-        
+        // print("finalLayoutAttributesForDisappearingItem \(itemIndexPath)")
+
         let idx = itemIndexPath.item
-                
+
         if disappearingItems.contains(itemIndexPath) {
             // item gets removed from collection view, we don't do any special delete animations for now, so just return
             // item attributes BEFORE batch update and let it fade away
-            let attributes = previousItems[idx].attribute(for: idx, width: currentCollectionViewWidth)
-            debugPrint("finalLayoutAttributesForDisappearingItem at \(itemIndexPath) (delete), frame: \(attributes.frame))")
+            let attributes = previousItems[idx]
+                .attribute(for: idx, width: currentCollectionViewWidth)
+                .copy() as! UICollectionViewLayoutAttributes
+            // print("finalLayoutAttributesForDisappearingItem at \(itemIndexPath) (delete), frame: \(attributes.frame))")
             return attributes
-            
+
         } else if let id = oldIdForItem(at: idx), let newIdx = indexForItem(with: id) {
             // this is item that will stay in collection view, but collection view decided to reload it
             // by removing and inserting it back (4head)
             // to properly animate possible change of such item, we need to return its attributes AFTER batch update
             let indexPath = IndexPath(item: newIdx, section: 0)
-            let attributes = layoutAttributesForItem(at: indexPath)
+            let attributes = layoutAttributesForItem(at: indexPath)?.copy() as? UICollectionViewLayoutAttributes
             animatingAttributes[indexPath] = attributes
-            debugPrint("finalLayoutAttributesForDisappearingItem at \(itemIndexPath) (reload), frame: \(attributes?.frame ?? .zero))")
+            attributes?.isHidden = true
+            // print("finalLayoutAttributesForDisappearingItem at \(itemIndexPath) (reload), frame: \(attributes?.frame ?? .zero))")
             return attributes
         } else {
             let attributes = super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
-            debugPrint("finalLayoutAttributesForDisappearingItem at \(itemIndexPath) (super), frame: \(attributes?.frame ?? .zero))")
+            // print("finalLayoutAttributesForDisappearingItem at \(itemIndexPath) (super), frame: \(attributes?.frame ?? .zero))")
             return attributes
         }
     }
-
+    
     // MARK: - Access Layout Item
 
     open func idForItem(at idx: Int) -> UUID? {

@@ -640,11 +640,11 @@ public extension _ChatChannelController {
             return
         }
         
-        channelQuery.pagination = MessagesPagination(pageSize: limit, parameter: .lessThan(messageId))
+//        channelQuery.pagination = MessagesPagination(pageSize: limit, parameter: .lessThan(messageId))
     
-        updater.update(channelQuery: channelQuery, completion: { error in
-            self.callback { completion?(error) }
-        })
+//        updater.update(channelQuery: channelQuery, completion: { error in
+//            self.callback { completion?(error) }
+//        })
     }
     
     /// Loads next messages from backend.

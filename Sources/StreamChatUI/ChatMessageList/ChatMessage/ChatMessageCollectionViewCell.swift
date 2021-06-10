@@ -58,7 +58,7 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
     override public func preferredLayoutAttributesFitting(
         _ layoutAttributes: UICollectionViewLayoutAttributes
     ) -> UICollectionViewLayoutAttributes {
-        debugPrint("cell: preferredLayoutAttributesFitting")
+//        debugPrint("cell: preferredLayoutAttributesFitting")
         let preferredAttributes = super.preferredLayoutAttributesFitting(layoutAttributes)
 
         let targetSize = CGSize(
@@ -73,5 +73,34 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         )
 
         return preferredAttributes
+    }
+    
+    override public func apply(_ layoutAttributes: UICollectionViewLayoutAttributes) {
+        let isInitial = layoutAttributes.isHidden
+        
+        layoutAttributes.isHidden = true
+
+        super.apply(layoutAttributes)
+        
+        if isInitial {
+            messageContentView?.setNeedsLayout()
+            setNeedsLayout()
+
+            UIView.setAnimationsEnabled(false)
+            superview?.layoutIfNeeded()
+            UIView.setAnimationsEnabled(true)
+        }
+        
+//
+//
+        ////        UIView.performWithoutAnimation {
+//            super.apply(layoutAttributes)
+        ////
+        ////            self.messageContentView?.setNeedsLayout()
+        ////            self.messageContentView?.layoutIfNeeded()
+        ////
+        ////            self.setNeedsLayout()
+        ////            self.layoutIfNeeded()
+        ////        }
     }
 }
