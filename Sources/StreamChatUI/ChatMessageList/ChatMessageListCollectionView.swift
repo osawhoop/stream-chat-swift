@@ -35,25 +35,16 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     
     private var contentOffsetObservation: NSKeyValueObservation?
     
-    // In some cases updates coming one by one might require scrolling to bottom.
-    //
-    // Scheduling the action and canceling the previous one ensures the scroll to bottom
-    // is done only once.
-    //
-    // Having a delay gives layout a chance to calculate the correct size for bottom cells
-    // so they are fully visible when scroll to bottom happens.
-    private var scrollToBottomAction: DispatchWorkItem? {
-        didSet {
-            oldValue?.cancel()
-            if let action = scrollToBottomAction {
-                DispatchQueue.main.asyncAfter(
-                    deadline: .now() + .milliseconds(200),
-                    execute: action
-                )
-            }
-        }
+    // The content inset set by the user. It's not used directly but it's assigned to super
+    // in `layoutSubviews()`. We adjust the top inset for situations when the content size
+    // is smaller than the bounds to keep the content to the bottom.
+    private var _contentInset: UIEdgeInsets = .zero
+    
+    override open var contentInset: UIEdgeInsets {
+        set { _contentInset = newValue }
+        get { _contentInset }
     }
-
+    
     public required init(layout: ChatMessageListCollectionViewLayout) {
         super.init(frame: .zero, collectionViewLayout: layout)
     }
@@ -61,7 +52,7 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     public required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
-
+    
     override open func didMoveToSuperview() {
         super.didMoveToSuperview()
         
@@ -153,6 +144,22 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         // Nothing to do
     }
 
+    override open func layoutSubviews() {
+        var adjustedContentInset = _contentInset
+
+        // If the content size is smaller than bounds, we have to adjust the top inset
+        // to make sure the content stays pinned to the bottom.
+        if contentSize.height < bounds.height {
+            adjustedContentInset.top = max(bounds.height - contentSize.height - contentInset.bottom, _contentInset.top)
+        }
+
+        if super.contentInset != adjustedContentInset {
+            super.contentInset = adjustedContentInset
+        }
+        
+        super.layoutSubviews()
+    }
+    
     /// Dequeues the message cell. Registers the cell for received combination of `contentViewClass + layoutOptions`
     /// if needed.
     /// - Parameters:
