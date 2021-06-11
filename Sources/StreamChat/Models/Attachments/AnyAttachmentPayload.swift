@@ -67,6 +67,12 @@ public extension AnyAttachmentPayload {
                 imageURL: localFileURL,
                 imagePreviewURL: localFileURL
             )
+        case .media:
+            payload = MediaAttachmentPayload(
+                title: localFileURL.lastPathComponent,
+                assetURL: localFileURL,
+                file: file
+            )
         default:
             payload = FileAttachmentPayload(
                 title: localFileURL.lastPathComponent,

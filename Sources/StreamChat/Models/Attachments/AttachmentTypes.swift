@@ -103,6 +103,7 @@ public extension AttachmentType {
     static let giphy = Self(rawValue: "giphy")
     static let video = Self(rawValue: "video")
     static let audio = Self(rawValue: "audio")
+    static let media = Self(rawValue: "media")
 
     /// Application custom types.
     static let linkPreview = Self(rawValue: "linkPreview")

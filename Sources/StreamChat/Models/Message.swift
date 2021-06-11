@@ -248,6 +248,13 @@ public extension _ChatMessage {
     var fileAttachments: [ChatMessageFileAttachment] {
         attachments(payloadType: FileAttachmentPayload.self)
     }
+    
+    /// Returns the attachments of `.media` type.
+    ///
+    /// - Important: The `mediaAttachments` are loaded lazily and cached to maintain high performance.
+    var mediaAttachments: [ChatMessageMediaAttachment] {
+        attachments(payloadType: MediaAttachmentPayload.self)
+    }
 
     /// Returns the attachments of `.giphy` type.
     ///
