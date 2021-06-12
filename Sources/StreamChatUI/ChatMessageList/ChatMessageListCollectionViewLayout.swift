@@ -181,14 +181,20 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         let context = super.invalidationContext(forBoundsChange: newBounds)
         
         guard let collectionView = collectionView else { return context }
-        
+
+        // The distance from the stable position at the bottom of the CV
+        let distanceFromBottom = collectionView.contentSize.height
+            - collectionView.contentOffset.y
+            - collectionView.contentInset.bottom
+            - collectionView.frame.height
+
+        // Height difference
         let delta = newBounds.height - collectionView.bounds.height
         
-        // If collectionView is shrinking and most recent message is visible, we will make sure it is still fully visible,
-        // but if the conversation is short and not scrollable, this adjustment would be unwanted
-        if delta < 0,
-           collectionView.indexPathsForVisibleItems.contains(IndexPath(item: 0, section: 0)),
-           collectionView.contentOffset.y > -collectionView.contentInset.top {
+        // Apply the difference only if:
+        //   a) the collection view shrinks
+        //   b) we're not at the very bottom of the list
+        if delta < 0 || distanceFromBottom > 1 {
             context.contentOffsetAdjustment = CGPoint(x: 0, y: -delta)
         }
 

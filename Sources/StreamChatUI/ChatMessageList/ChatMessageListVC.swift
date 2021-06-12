@@ -28,9 +28,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     /// Observer responsible for setting the correct offset when keyboard frame is changed
     open lazy var keyboardObserver = ChatMessageListKeyboardObserver(
         containerView: view,
-        collectionView: collectionView,
-        composerBottomConstraint: messageComposerBottomConstraint,
-        viewController: self
+        composerBottomConstraint: messageComposerBottomConstraint
     )
 
     /// User search controller passed directly to the composer
