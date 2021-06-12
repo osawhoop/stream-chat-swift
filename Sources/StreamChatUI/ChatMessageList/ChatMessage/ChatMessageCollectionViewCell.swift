@@ -71,6 +71,12 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
             verticalFittingPriority: .fittingSizeLevel
         )
 
+        // We need to communicate the current layout options back the the layout such that
+        // they can be used later for animation purposes.
+        if let cellAttributes = preferredAttributes as? MessageCellLayoutAttributes {
+            cellAttributes.layoutOptions = messageContentView?.layoutOptions
+        }
+
         return preferredAttributes
     }
 }

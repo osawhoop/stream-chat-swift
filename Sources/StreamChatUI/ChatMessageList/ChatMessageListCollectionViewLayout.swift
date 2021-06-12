@@ -15,6 +15,10 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         public var offset: CGFloat
         public var height: CGFloat
 
+        public var label: String = ""
+        public var layoutOptions: ChatMessageLayoutOptions?
+        public var previousLayoutOptions: ChatMessageLayoutOptions?
+
         public var maxY: CGFloat {
             offset + height
         }
@@ -24,14 +28,19 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
             self.height = height
         }
 
-        public func attribute(for index: Int, width: CGFloat) -> UICollectionViewLayoutAttributes {
-            let attribute = UICollectionViewLayoutAttributes(forCellWith: IndexPath(item: index, section: 0))
+        public func attribute(for index: Int, width: CGFloat) -> MessageCellLayoutAttributes {
+            let attribute = MessageCellLayoutAttributes(forCellWith: IndexPath(item: index, section: 0))
             attribute.frame = CGRect(x: 0, y: offset, width: width, height: height)
             // default `zIndex` value is 0, but for some undocumented reason self-sizing
             // (concretely `contentView.systemLayoutFitting(...)`) doesn't work correctly,
             // so we need to make sure we do not use it, we need to add 1 so indexPath 0-0 doesn't have
             // problematic 0 zIndex
             attribute.zIndex = index + 1
+
+            attribute.layoutOptions = layoutOptions
+            attribute.previousLayoutOptions = previousLayoutOptions
+            attribute.label = label
+
             return attribute
         }
     }
@@ -89,7 +98,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     /// Flag to make sure the `prepare()` function is only executed when the collection view had been loaded.
     /// The rest of the updates should come from `prepare(forCollectionViewUpdates:)`.
     private var didPerformInitialLayout = false
-
+    
     // MARK: - Initialization
 
     override public required init() {
@@ -126,7 +135,18 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         let idx = originalAttributes.indexPath.item
 
         let delta = preferredAttributes.frame.height - currentItems[idx].height
-        currentItems[idx].height = preferredAttributes.frame.height
+
+        var item = currentItems[idx]
+        item.height = preferredAttributes.frame.height
+
+        if let cellAttributes = preferredAttributes as? MessageCellLayoutAttributes {
+            item.layoutOptions = cellAttributes.layoutOptions
+            item.previousLayoutOptions = cellAttributes.previousLayoutOptions
+            item.label = cellAttributes.label
+        }
+
+        currentItems[idx] = item
+
         // if item have been inserted recently or deleted, we need to update its attributes to prevent weird flickering
         animatingAttributes[preferredAttributes.indexPath]?.frame.size.height = preferredAttributes.frame.height
         
@@ -258,6 +278,12 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
         appearingItems.removeAll()
         disappearingItems.removeAll()
         animatingAttributes.removeAll()
+
+        // Reset all stored previous layout options because they are valid only for a single update
+        currentItems.indices.forEach {
+            currentItems[$0].previousLayoutOptions = nil
+        }
+
         super.finalizeCollectionViewUpdates()
         restoreOffset = nil
     }
