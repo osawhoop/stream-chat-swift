@@ -388,6 +388,8 @@ open class _ChatThreadVC<ExtraData: ExtraDataTypes>:
 
     // MARK: - _ComposerVCDelegate
 
+    open func composerWillCreateNewMessage() {}
+
     open func composerDidCreateNewMessage() {}
 
     // MARK: - _ChatChannelControllerDelegate

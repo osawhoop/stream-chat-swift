@@ -467,6 +467,14 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
 
     open func composerDidCreateNewMessage() {}
 
+    open func composerWillCreateNewMessage() {
+        // If we're scrolled to far up, let's move down
+        // so the new message animation is nicely visible
+        if collectionView.contentOffset.y < (collectionView.contentSize.height - 2 * collectionView.bounds.height) {
+            scrollToLatestMessage()
+        }
+    }
+
     // MARK: - _ChatChannelControllerDelegate
 
     open func channelController(

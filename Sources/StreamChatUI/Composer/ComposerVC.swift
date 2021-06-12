@@ -7,6 +7,7 @@ import UIKit
 
 /// The delegate of the ComposerVC that notifies composer events.
 public protocol ComposerVCDelegate: AnyObject {
+    func composerWillCreateNewMessage()
     func composerDidCreateNewMessage()
 }
 
@@ -474,6 +475,8 @@ open class _ComposerVC<ExtraData: ExtraDataTypes>: _ViewController,
                 content.mentionedUsers.remove(user)
             }
         }
+
+        delegate?.composerWillCreateNewMessage()
 
         if let threadParentMessageId = content.threadMessage?.id {
             let messageController = channelController?.client.messageController(
