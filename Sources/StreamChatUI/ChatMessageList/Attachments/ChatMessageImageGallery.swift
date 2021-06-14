@@ -11,14 +11,11 @@ public typealias ChatMessageImageGallery = _ChatMessageImageGallery<NoExtraData>
 /// Gallery view that displays images.
 open class _ChatMessageImageGallery<ExtraData: ExtraDataTypes>: _View, ThemeProvider {
     /// Content the image gallery should display.
-    public var content: [ChatMessageImageAttachment] = [] {
+    public var content: [UIView] = [] {
         didSet { updateContentIfNeeded() }
     }
     
     override open var intrinsicContentSize: CGSize { .init(width: .max, height: .max) }
-
-    /// Triggered when an attachment is tapped.
-    public var didTapOnAttachment: ((ChatMessageImageAttachment) -> Void)?
 
     // Previews indices locations:
     // When one image available:
@@ -54,11 +51,11 @@ open class _ChatMessageImageGallery<ExtraData: ExtraDataTypes>: _View, ThemeProv
     // |     |     |
     // -------------
     /// Previews for images.
-    public private(set) lazy var previews = [
-        createImagePreview(),
-        createImagePreview(),
-        createImagePreview(),
-        createImagePreview()
+    public private(set) lazy var itemSpots = [
+        UIView().withoutAutoresizingMaskConstraints,
+        UIView().withoutAutoresizingMaskConstraints,
+        UIView().withoutAutoresizingMaskConstraints,
+        UIView().withoutAutoresizingMaskConstraints
     ]
 
     /// Overlay to be displayed when `content` contains more images than the gallery can display.
@@ -90,8 +87,8 @@ open class _ChatMessageImageGallery<ExtraData: ExtraDataTypes>: _View, ThemeProv
         leftPreviewsContainerView.alignment = .fill
         previewsContainerView.addArrangedSubview(leftPreviewsContainerView)
         
-        leftPreviewsContainerView.addArrangedSubview(previews[0])
-        leftPreviewsContainerView.addArrangedSubview(previews[2])
+        leftPreviewsContainerView.addArrangedSubview(itemSpots[0])
+        leftPreviewsContainerView.addArrangedSubview(itemSpots[2])
         
         rightPreviewsContainerView.spacing = 0
         rightPreviewsContainerView.axis = .vertical
@@ -99,11 +96,11 @@ open class _ChatMessageImageGallery<ExtraData: ExtraDataTypes>: _View, ThemeProv
         rightPreviewsContainerView.alignment = .fill
         previewsContainerView.addArrangedSubview(rightPreviewsContainerView)
         
-        rightPreviewsContainerView.addArrangedSubview(previews[1])
-        rightPreviewsContainerView.addArrangedSubview(previews[3])
+        rightPreviewsContainerView.addArrangedSubview(itemSpots[1])
+        rightPreviewsContainerView.addArrangedSubview(itemSpots[3])
         
         addSubview(moreImagesOverlay)
-        moreImagesOverlay.pin(to: previews[3])
+        moreImagesOverlay.pin(to: itemSpots[3])
     }
 
     override open func setUpAppearance() {
@@ -116,30 +113,33 @@ open class _ChatMessageImageGallery<ExtraData: ExtraDataTypes>: _View, ThemeProv
     }
 
     override open func updateContent() {
-        for (index, itemPreview) in previews.enumerated() {
-            itemPreview.content = content[safe: index]
-            itemPreview.isHidden = itemPreview.content == nil
+        super.updateContent()
+        
+        // Clear all spots
+        itemSpots
+            .flatMap(\.subviews)
+            .forEach { $0.removeFromSuperview() }
+        
+        // Add previews to the spots
+        for (preview, spot) in zip(content, itemSpots) {
+            spot.addSubview(preview)
+            preview.pin(to: spot)
         }
-
-        // Left and right have the same size if a view is not specified as `isHidden`.
-        // Without this, both container views would be forced to be of size zero.
+        
+        // Show taken spots, hide empty ones
+        itemSpots.forEach { spot in
+            spot.isHidden = spot.subviews.isEmpty
+        }
+        
         rightPreviewsContainerView.isHidden = rightPreviewsContainerView.subviews
             .allSatisfy(\.isHidden)
+        leftPreviewsContainerView.isHidden = leftPreviewsContainerView.subviews
+            .allSatisfy(\.isHidden)
+        previewsContainerView.isHidden = previewsContainerView.subviews
+            .allSatisfy(\.isHidden)
 
-        let otherImagesCount = content.count - previews.count
-        moreImagesOverlay.isHidden = otherImagesCount <= 0
-        moreImagesOverlay.text = "+\(otherImagesCount)"
-    }
-
-    /// Factory method for image previews.
-    open func createImagePreview() -> ImagePreview {
-        let preview = ImagePreview()
-            .withoutAutoresizingMaskConstraints
-
-        preview.didTapOnAttachment = { [weak self] in
-            self?.didTapOnAttachment?($0)
-        }
-
-        return preview
+        let notShownPreviewsCount = content.count - itemSpots.count
+        moreImagesOverlay.text = notShownPreviewsCount > 0 ? "+\(notShownPreviewsCount)" : nil
+        moreImagesOverlay.isHidden = moreImagesOverlay.text == nil
     }
 }
