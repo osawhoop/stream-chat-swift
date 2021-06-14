@@ -228,7 +228,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     open func attachmentViewInjectorClassForMessage(at indexPath: IndexPath) -> _AttachmentViewInjector<ExtraData>.Type? {
         let attachmentCounts = messageForIndexPath(indexPath).attachmentCounts
 
-        if attachmentCounts.keys.contains(.image) {
+        if attachmentCounts.keys.contains(.image) || attachmentCounts.keys.contains(.media) {
             return components.galleryAttachmentInjector
         } else if attachmentCounts.keys.contains(.giphy) {
             return components.giphyAttachmentInjector
@@ -428,6 +428,14 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
             initialAttachment: attachment,
             previews: previews
         )
+    }
+    
+    open func didTapOnMediaAttachment(
+        _ attachment: ChatMessageMediaAttachment,
+        previews: [ImagePreviewable],
+        at indexPath: IndexPath
+    ) {
+        debugPrint("didTapOnMediaAttachment")
     }
     
     open func didTapOnLinkAttachment(

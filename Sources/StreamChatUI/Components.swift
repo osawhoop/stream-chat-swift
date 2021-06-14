@@ -165,6 +165,10 @@ public struct _Components<ExtraData: ExtraDataTypes> {
     /// The view that shows an image attachment inside message cell.
     public var imageAttachmentCellView: _ChatMessageImageGallery<ExtraData>.ImagePreview.Type =
         _ChatMessageImageGallery<ExtraData>.ImagePreview.self
+    
+    /// The view that shows a media attachment inside message cell.
+    public var mediaAttachmentCellView: _MediaAttachmentCellView<ExtraData>.Type =
+        _MediaAttachmentCellView<ExtraData>.self
 
     /// The view that shows an overlay with uploading progress for image attachment that is being uploaded.
     public var imageUploadingOverlay: _ChatMessageImageGallery<ExtraData>.UploadingOverlay.Type =

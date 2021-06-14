@@ -13,6 +13,13 @@ public protocol GalleryContentViewDelegate: ChatMessageContentViewDelegate {
         previews: [ImagePreviewable],
         at indexPath: IndexPath
     )
+    
+    /// Called when the user taps on one of the media attachments.
+    func didTapOnMediaAttachment(
+        _ attachment: ChatMessageMediaAttachment,
+        previews: [ImagePreviewable],
+        at indexPath: IndexPath
+    )
 }
 
 public typealias GalleryAttachmentViewInjector = _GalleryAttachmentViewInjector<NoExtraData>
@@ -34,14 +41,23 @@ open class _GalleryAttachmentViewInjector<ExtraData: ExtraDataTypes>: _Attachmen
     }
     
     override open func contentViewDidUpdateContent() {
-        galleryView.content = imageAttachments.map(preview)
+        galleryView.content = imageAttachments.map(preview) + mediaAttachments.map(preview)
     }
 
     open func handleTapOnAttachment(_ attachment: ChatMessageImageAttachment) {
-        guard
-            let indexPath = contentView.indexPath?()
-        else { return }
+        guard let indexPath = contentView.indexPath?() else { return }
+        
         (contentView.delegate as? GalleryContentViewDelegate)?.didTapOnImageAttachment(
+            attachment,
+            previews: galleryView.content.compactMap { $0 as? ImagePreviewable },
+            at: indexPath
+        )
+    }
+    
+    open func handleTapOnAttachment(_ attachment: ChatMessageMediaAttachment) {
+        guard let indexPath = contentView.indexPath?() else { return }
+        
+        (contentView.delegate as? GalleryContentViewDelegate)?.didTapOnMediaAttachment(
             attachment,
             previews: galleryView.content.compactMap { $0 as? ImagePreviewable },
             at: indexPath
@@ -53,6 +69,27 @@ private extension _GalleryAttachmentViewInjector {
     var imageAttachments: [ChatMessageImageAttachment] {
         contentView.content?.imageAttachments ?? []
     }
+    
+    var mediaAttachments: [ChatMessageMediaAttachment] {
+        contentView.content?.mediaAttachments ?? []
+    }
+    
+    func preview(for mediaAttachment: ChatMessageMediaAttachment) -> UIView {
+        let preview = contentView
+            .components
+            .mediaAttachmentCellView
+            .init()
+            .withoutAutoresizingMaskConstraints
+        
+        preview.didTapOnAttachment = { [weak self] in
+            self?.handleTapOnAttachment($0)
+        }
+        
+        preview.content = mediaAttachment
+
+        return preview
+    }
+    
     func preview(for imageAttachment: ChatMessageImageAttachment) -> UIView {
         let preview = contentView
             .components
