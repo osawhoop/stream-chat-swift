@@ -94,43 +94,20 @@ open class _MediaAttachmentComposerView<ExtraData: ExtraDataTypes>: _View, Theme
         loadingIndicator.isHidden = false
         previewImageView.image = nil
         
-        content?.loadVideoPreview { [weak self] in
-            self?.loadingIndicator.isHidden = true
-            
-            switch $0 {
-            case let .success(preview):
-                self?.previewImageView.image = preview
-            case .failure:
-                self?.previewImageView.image = nil
-            }
-        }
-        
-        videoDurationLabel.text = content.flatMap {
-            DateComponentsFormatter.videoDuration.string(
-                from: AVURLAsset(url: $0).duration.seconds
-            )
-        }
-    }
-}
-
-private extension URL {
-    func loadVideoPreview(completion: @escaping (Result<UIImage, Error>) -> Void) {
-        DispatchQueue.global().async {
-            let asset = AVURLAsset(url: self)
-            let imageGenerator = AVAssetImageGenerator(asset: asset)
-            imageGenerator.appliesPreferredTrackTransform = true
-            let time = CMTime(seconds: 1, preferredTimescale: 100)
-
-            let result: Result<UIImage, Error>
-            do {
-                let thumbnail = try imageGenerator.copyCGImage(at: time, actualTime: nil)
-                result = .success(UIImage(cgImage: thumbnail))
-            } catch {
-                result = .failure(error)
-            }
-
-            DispatchQueue.main.async {
-                completion(result)
+        if let url = content {
+            components.mediaPreviewLoader.loadPreview(for: url) { [weak self] in
+                self?.loadingIndicator.isHidden = true
+                
+                switch $0 {
+                case let .success(preview):
+                    self?.previewImageView.image = preview
+                    self?.videoDurationLabel.text = DateComponentsFormatter.videoDuration.string(
+                        from: 10
+                    )
+                case .failure:
+                    self?.previewImageView.image = nil
+                    self?.videoDurationLabel.text = nil
+                }
             }
         }
     }
