@@ -11,7 +11,9 @@ func Animate(
     completion: ((Bool) -> Void)? = nil
 ) {
     guard isAnimated, !UIAccessibility.isReduceMotionEnabled else {
-        actions()
+        UIView.performWithoutAnimation {
+            actions()
+        }
         completion?(true)
         return
     }
