@@ -121,8 +121,11 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         userSuggestionSearchController.search(term: nil)
         
         channelController.setDelegate(self)
-        channelController.synchronize()
-        
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+            self.channelController.synchronize()
+        }
+
         if channelController.channel?.isDirectMessageChannel == true {
             timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
                 self?.updateNavigationBarContent()
@@ -136,7 +139,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     
     override open func setUpLayout() {
         super.setUpLayout()
-        
+
         view.addSubview(collectionView)
         collectionView.pin(anchors: [.top, .leading, .trailing], to: view.safeAreaLayoutGuide)
         
@@ -169,8 +172,10 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
             channelAvatarView.heightAnchor.pin(equalToConstant: 32)
         ])
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: channelAvatarView)
-        
-        collectionView.contentInset.top += max(collectionView.layoutMargins.right, collectionView.layoutMargins.left)
+
+        let horizontalInset = max(collectionView.layoutMargins.right, collectionView.layoutMargins.left)
+        collectionView.contentInset.top += horizontalInset
+        collectionView.contentInset.bottom += horizontalInset
     }
 
     override open func setUpAppearance() {
@@ -264,7 +269,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         forItemAt indexPath: IndexPath
     ) {
         if indexPath.row + 1 >= collectionView.numberOfItems(inSection: 0) {
-            channelController.loadPreviousMessages()
+//            channelController.loadPreviousMessages()
         }
     }
     
@@ -282,6 +287,8 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
             // Hide the button immediately. Temporary solution until CIS-881 is implemented.
             setScrollToLatestMessageButton(visible: false)
         }
+
+        print("Content offset: \(scrollView.contentOffset.y)")
     }
     
     /// Scrolls to most recent message
@@ -358,9 +365,31 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         didSelectMessageCell(at: ip)
     }
 
+    open func scrollBehavior(for changes: [ListChange<_ChatMessage<ExtraData>>]) -> ScrollBehavior? {
+        // If there are more than one update always
+        guard changes.count == 1, let change = changes.first else {
+            return FixScrollPosition()
+        }
+
+        switch change {
+        case let .insert(message, index) where message.isSentByCurrentUser && index.item == 0:
+            return ScrollToLatestMessage()
+
+        default:
+            return FixScrollPosition(areUpdatesAnimated: true)
+        }
+    }
+
     /// Updates the collection view data with given `changes`.
     open func updateMessages(with changes: [ListChange<_ChatMessage<ExtraData>>], completion: ((Bool) -> Void)? = nil) {
-        collectionView.updateMessages(with: changes, completion: completion)
+        let scrollBehavior = self.scrollBehavior(for: changes)
+
+        collectionView.updateMessages(
+            with: changes,
+            isAnimated: false,
+            scrollBehavior: scrollBehavior,
+            completion: completion
+        )
     }
     
     open func messageForIndexPath(_ indexPath: IndexPath) -> _ChatMessage<ExtraData> {

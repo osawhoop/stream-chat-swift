@@ -60,6 +60,12 @@ class LoginViewController: UIViewController {
             tableView.deselectRow(at: selectedRow, animated: true)
         }
     }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+//        tableView(tableView, didSelectRowAt: IndexPath(row: 14, section: 0))
+    }
 }
 
 extension LoginViewController: UITableViewDelegate, UITableViewDataSource {

@@ -60,6 +60,14 @@ open class _ChatChannelListVC<ExtraData: ExtraDataTypes>: _ViewController,
     /// We use private property for channels count so we can update it inside `performBatchUpdates` as [documented](https://developer.apple.com/documentation/uikit/uicollectionview/1618045-performbatchupdates#discussion)
     private var channelsCount = 0
 
+    override open func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+//            self.collectionView(self.collectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
+        }
+    }
+
     override open func setUp() {
         super.setUp()
         controller.setDelegate(self)

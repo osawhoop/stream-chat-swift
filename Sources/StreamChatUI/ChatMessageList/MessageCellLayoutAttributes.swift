@@ -17,11 +17,23 @@ open class MessageCellLayoutAttributes: UICollectionViewLayoutAttributes {
     /// A string that can be used for debug purposes. Has no effect on the functionality.
     open var label: String = ""
 
+    open var isChangeAnimated: Bool = true
+
+    /// If set to `true` this attributes are the initial attributes which can be invalid.
+    open var isInitialAttributes: Bool = false
+
+    open var isFinalAttributes: Bool = false
+
+    open var isCachedAttribute: Bool = false
+
     override open func copy(with zone: NSZone? = nil) -> Any {
         let copy = super.copy(with: zone) as! MessageCellLayoutAttributes
         copy.layoutOptions = layoutOptions
         copy.previousLayoutOptions = previousLayoutOptions
         copy.label = label
+        copy.isChangeAnimated = isChangeAnimated
+        copy.isInitialAttributes = isInitialAttributes
+        copy.isFinalAttributes = isFinalAttributes
         return copy
     }
 
@@ -31,6 +43,9 @@ open class MessageCellLayoutAttributes: UICollectionViewLayoutAttributes {
         return layoutOptions == rhs.layoutOptions
             && previousLayoutOptions == rhs.previousLayoutOptions
             && label == rhs.label
+            && isChangeAnimated == rhs.isChangeAnimated
+            && isInitialAttributes == rhs.isInitialAttributes
+            && isFinalAttributes == rhs.isFinalAttributes
             && super.isEqual(object)
     }
 }

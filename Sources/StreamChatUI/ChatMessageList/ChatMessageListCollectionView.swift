@@ -35,15 +35,15 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     
     private var contentOffsetObservation: NSKeyValueObservation?
     
-    // The content inset set by the user. It's not used directly but it's assigned to super
-    // in `layoutSubviews()`. We adjust the top inset for situations when the content size
-    // is smaller than the bounds to keep the content to the bottom.
-    private var _contentInset: UIEdgeInsets = .zero
-    
-    override open var contentInset: UIEdgeInsets {
-        set { _contentInset = newValue }
-        get { _contentInset }
-    }
+//    // The content inset set by the user. It's not used directly but it's assigned to super
+//    // in `layoutSubviews()`. We adjust the top inset for situations when the content size
+//    // is smaller than the bounds to keep the content to the bottom.
+//    private var _contentInset: UIEdgeInsets = .zero
+//
+//    override open var contentInset: UIEdgeInsets {
+//        set { _contentInset = newValue }
+//        get { _contentInset }
+//    }
     
     // In some cases updates coming one by one might require scrolling to bottom.
     //
@@ -78,7 +78,9 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         guard !isInitialized, superview != nil else { return }
         
         isInitialized = true
-        
+
+        insetsLayoutMarginsFromSafeArea = false
+
         setUp()
         setUpLayout()
         setUpAppearance()
@@ -163,21 +165,21 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         // Nothing to do
     }
 
-    override open func layoutSubviews() {
-        var adjustedContentInset = _contentInset
-
-        // If the content size is smaller than bounds, we have to adjust the top inset
-        // to make sure the content stays pinned to the bottom.
-        if contentSize.height < bounds.height {
-            adjustedContentInset.top = max(bounds.height - contentSize.height - contentInset.bottom, _contentInset.top)
-        }
-
-        if super.contentInset != adjustedContentInset {
-            super.contentInset = adjustedContentInset
-        }
-        
-        super.layoutSubviews()
-    }
+//    override open func layoutSubviews() {
+//        var adjustedContentInset = _contentInset
+//
+//        // If the content size is smaller than bounds, we have to adjust the top inset
+//        // to make sure the content stays pinned to the bottom.
+//        if contentSize.height < bounds.height {
+//            adjustedContentInset.top = max(bounds.height - contentSize.height - contentInset.bottom, _contentInset.top)
+//        }
+//
+//        if super.contentInset != adjustedContentInset {
+//            super.contentInset = adjustedContentInset
+//        }
+//
+//        super.layoutSubviews()
+//    }
     
     /// Dequeues the message cell. Registers the cell for received combination of `contentViewClass + layoutOptions`
     /// if needed.
@@ -225,44 +227,44 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     /// Updates the collection view data with given `changes`.
     open func updateMessages(
         with changes: [ListChange<_ChatMessage<ExtraData>>],
+        isAnimated: Bool = false,
+        scrollBehavior: ScrollBehavior? = nil,
         completion: ((Bool) -> Void)? = nil
     ) {
-        // Before committing the changes, we need to check if were scrolled
-        // to the bottom, if yes, we should stay scrolled to the bottom
-        var shouldScrollToBottom = isLastCellFullyVisible
+        setNeedsLayout()
+        layoutIfNeeded()
 
-        performBatchUpdates {
-            for change in changes {
-                switch change {
-                case let .insert(message, index):
-                    if message.isSentByCurrentUser, index == IndexPath(item: 0, section: 0) {
-                        // When the message from current user comes we should scroll to bottom
-                        shouldScrollToBottom = true
+        // Before committing the change the scroll behavior needs opportunity to capture
+        // the pre-update state
+        var scrollBehavior = scrollBehavior
+        scrollBehavior?.preUpdate(self)
+
+        Animate(isAnimated: isAnimated) {
+            self.performBatchUpdates {
+                for change in changes {
+                    switch change {
+                    case let .insert(_, index):
+                        self.insertItems(at: [index])
+                    case let .move(_, fromIndex, toIndex):
+                        self.moveItem(at: fromIndex, to: toIndex)
+                    case let .remove(_, index):
+                        self.deleteItems(at: [index])
+                    case let .update(_, index):
+                        self.reloadItems(at: [index])
                     }
-                    insertItems(at: [index])
-                case let .move(_, fromIndex, toIndex):
-                    moveItem(at: fromIndex, to: toIndex)
-                case let .remove(_, index):
-                    deleteItems(at: [index])
-                case let .update(_, index):
-                    reloadItems(at: [index])
                 }
-            }
-        } completion: { flag in
-            // If a new message was inserted or deleted, reload the previous message
-            // to give it chance to update its appearance in case it's now end of a group.
-            let indexPaths = self.indexPathsToReloadAfterBatchUpdates(with: changes)
-            if indexPaths.isEmpty == false {
-                self.reloadItems(at: indexPaths)
-            }
-
-            if shouldScrollToBottom {
-                self.scrollToBottomAction = .init { [weak self] in
-                    self?.scrollToMostRecentMessage()
+            } completion: { flag in
+                // If a new message was inserted or deleted, reload the previous message
+                // to give it chance to update its appearance in case it's now end of a group.
+                let indexPaths = self.indexPathsToReloadAfterBatchUpdates(with: changes)
+                if indexPaths.isEmpty == false {
+                    self.reloadItems(at: indexPaths)
                 }
-            }
 
-            completion?(flag)
+                scrollBehavior?.postUpdate(self)
+
+                completion?(flag)
+            }
         }
     }
     
