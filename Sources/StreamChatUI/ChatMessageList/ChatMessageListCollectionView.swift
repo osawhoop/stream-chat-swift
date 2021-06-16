@@ -32,7 +32,8 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     private var chatDataSource: ChatMessageListCollectionViewDataSource? {
         dataSource as? ChatMessageListCollectionViewDataSource
     }
-    
+
+    private var contentSizeObservation: NSKeyValueObservation?
     private var contentOffsetObservation: NSKeyValueObservation?
     
 //    // The content inset set by the user. It's not used directly but it's assigned to super
@@ -88,6 +89,14 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     }
     
     open func setUp() {
+        contentSizeObservation = observe(\.contentSize) { cv, _ in
+            print("""
+            ----------
+            ⚠️ Content size changed: \(cv.contentSize)
+            ----------
+            """)
+        }
+
         // Setup `contentOffset` observation so `delegate` is free for anyone that wants to use it
         contentOffsetObservation = observe(\.contentOffset) { cv, _ in
             /// To display correct date we use bottom edge of `dateView` (we use `cv.layoutMargins.top` for both vertical offsets of `dateView`

@@ -95,36 +95,36 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         guard let attributes = layoutAttributes as? MessageCellLayoutAttributes else {
             return
         }
-
-        if attributes.isCachedAttribute {
-            UIView.performWithoutAnimation {
-                layer.removeAllAnimations()
-
-                messageContentView?.setNeedsLayout()
-                messageContentView?.layoutIfNeeded()
-            }
-        }
-
-//        isHidden = !attributes.isChangeAnimated
-
-        if attributes.isHidden {
-            print()
-        }
-
-        if !attributes.isChangeAnimated {
-            isHidden = false
-        }
-
-        if attributes.isInitialAttributes {
+//
+//        if attributes.isCachedAttribute {
+//            UIView.performWithoutAnimation {
+//                layer.removeAllAnimations()
+//
+//                messageContentView?.setNeedsLayout()
+//                messageContentView?.layoutIfNeeded()
+//            }
+//        }
+//
+        ////        isHidden = !attributes.isChangeAnimated
+//
+//        if attributes.isHidden {
+//            print()
+//        }
+//
+//        if !attributes.isChangeAnimated {
+//            isHidden = false
+//        }
+//
+//        if attributes.isInitialAttributes {
 //            UIView.performWithoutAnimation {
 //                if let presentationLayer = layer.presentation() {
 //                    self.frame = presentationLayer.frame
 //
 //                    layer.removeAllAnimations()
-            ////                    presentationLayer.isHidden = true
+        ////                    presentationLayer.isHidden = true
 //                    presentationLayer.setAffineTransform(CGAffineTransform(rotationAngle: 0.15))
 //
-            ////                    presentationLayer.isHidden = true
+        ////                    presentationLayer.isHidden = true
 //
 //
 //
@@ -133,7 +133,7 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
 //                }
 //
 //            }
-        }
+//        }
 //
 //        if attributes.isChangeAnimated {
 //            self.isHidden = true
@@ -148,24 +148,34 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
 //            isHidden = false
 //        }
 
-        print(
-            "👉 \(String(format: "%p", self)) applying attributes: \(attributes.indexPath) | \(attributes.frame.origin) -> \(attributes.label)"
-        )
+//        print(
+//            "👉 \(String(format: "%p", self)) applying attributes: \(attributes.indexPath) | \(attributes.frame.origin) -> \(attributes.label)"
+//        )
+//
 
-        if attributes.isChangeAnimated {
-            isHidden = false
+//        layer.removeAllAnimations()
+//
+//        UIView.performWithoutAnimation {
+//
+//
+//            messageContentView?.setNeedsLayout()
+//            messageContentView?.layoutIfNeeded()
+//        }
 
-        } else {
-            // These attributes can be invalid. We rather hide the view to prevent any
-            // visual glitches and unwanted animations
-            isHidden = true
+//        if attributes.isChangeAnimated {
+//            isHidden = false
 
-            UIView.performWithoutAnimation {
-                messageContentView?.setNeedsLayout()
-                messageContentView?.layoutIfNeeded()
-            }
+//        } else {
+        // These attributes can be invalid. We rather hide the view to prevent any
+        // visual glitches and unwanted animations
+//            isHidden = true
 
-            layer.removeAllAnimations()
-        }
+//            UIView.performWithoutAnimation {
+//                messageContentView?.setNeedsLayout()
+//                messageContentView?.layoutIfNeeded()
+//            }
+//
+//            layer.removeAllAnimations()
+//        }
     }
 }
