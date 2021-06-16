@@ -419,13 +419,9 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         previews: [ImagePreviewable],
         at indexPath: IndexPath
     ) {
-        guard
-            let cell = collectionView.cellForItem(at: indexPath) as? _ChatMessageCollectionViewCell<ExtraData>,
-            let message = cell.messageContentView?.content
-        else { return }
         router.showImageGallery(
-            message: message,
-            initialAttachment: attachment,
+            message: messageForIndexPath(indexPath),
+            initialAttachmentId: attachment.id,
             previews: previews
         )
     }
@@ -435,7 +431,11 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         previews: [ImagePreviewable],
         at indexPath: IndexPath
     ) {
-        debugPrint("didTapOnMediaAttachment")
+        router.showImageGallery(
+            message: messageForIndexPath(indexPath),
+            initialAttachmentId: attachment.id,
+            previews: previews
+        )
     }
     
     open func didTapOnLinkAttachment(

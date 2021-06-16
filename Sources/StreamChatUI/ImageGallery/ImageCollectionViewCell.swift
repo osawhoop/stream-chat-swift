@@ -5,94 +5,55 @@
 import StreamChat
 import UIKit
 
-public typealias ImageCollectionViewCell = _ImageCollectionViewCell<NoExtraData>
+public typealias ImageAttachmentCell = _ImageAttachmentCell<NoExtraData>
 
-/// `UICollectionViewCell` for a single image.
-open class _ImageCollectionViewCell<ExtraData: ExtraDataTypes>: _CollectionViewCell, UIScrollViewDelegate, ComponentsProvider {
-    /// Reuse identifier of this cell.
-    open class var reuseId: String { String(describing: self) }
+open class _ImageAttachmentCell<ExtraData: ExtraDataTypes>: _GalleryAttachmentCell<ExtraData> {
+    override open class var reuseId: String { String(describing: self) }
     
     /// Content of this view.
-    open var content: ChatMessageImageAttachment! {
+    open var content: ChatMessageImageAttachment? {
         didSet { updateContentIfNeeded() }
     }
-    
-    /// Triggered when the underlying image is single tapped.
-    open var imageSingleTapped: (() -> Void)?
     
     /// Image view showing the single image.
     public private(set) lazy var imageView = UIImageView()
         .withoutAutoresizingMaskConstraints
     
-    /// `UIScrollView` to enable zooming the image.
-    public private(set) lazy var imageScrollView = UIScrollView()
-        .withoutAutoresizingMaskConstraints
-    
-    override open func setUpAppearance() {
-        super.setUpAppearance()
+    override open func setUp() {
+        super.setUp()
         
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFit
     }
     
-    override open func setUp() {
-        super.setUp()
-        
-        imageScrollView.delegate = self
-        imageScrollView.minimumZoomScale = 1
-        imageScrollView.maximumZoomScale = 5
-        
-        let doubleTapGestureRecognizer = UITapGestureRecognizer(
-            target: self,
-            action: #selector(imageScrollViewDoubleTapped)
-        )
-        doubleTapGestureRecognizer.numberOfTapsRequired = 2
-        imageScrollView.addGestureRecognizer(doubleTapGestureRecognizer)
-        
-        let singleTapGestureRecognizer = UITapGestureRecognizer(
-            target: self,
-            action: #selector(imageScrollViewSingleTapped)
-        )
-        singleTapGestureRecognizer.numberOfTapsRequired = 1
-        singleTapGestureRecognizer.require(toFail: doubleTapGestureRecognizer)
-        imageScrollView.addGestureRecognizer(singleTapGestureRecognizer)
-    }
-    
     override open func setUpLayout() {
         super.setUpLayout()
         
-        contentView.embed(imageScrollView)
-        imageScrollView.embed(imageView)
+        scrollView.addSubview(imageView)
         imageView.pin(anchors: [.height, .width], to: contentView)
     }
     
     override open func updateContent() {
         super.updateContent()
 
-        imageView.loadImage(
-            from: content.payload.imageURL,
-            resize: false,
-            components: components
-        )
-    }
-    
-    open func viewForZooming(in scrollView: UIScrollView) -> UIView? {
-        imageView
-    }
-    
-    /// Triggered when image scroll view is double tapped.
-    @objc
-    open func imageScrollViewDoubleTapped() {
-        if imageScrollView.zoomScale != imageScrollView.minimumZoomScale {
-            imageScrollView.setZoomScale(imageScrollView.minimumZoomScale, animated: true)
+        if let url = content?.imageURL {
+            imageView.loadImage(
+                from: url,
+                resize: false,
+                components: components
+            )
         } else {
-            imageScrollView.setZoomScale(imageScrollView.maximumZoomScale / 2, animated: true)
+            imageView.image = nil
         }
     }
     
-    /// Triggered when image scroll view is single tapped.
-    @objc
-    open func imageScrollViewSingleTapped() {
-        imageSingleTapped?()
+    override open func viewForZooming(in scrollView: UIScrollView) -> UIView? {
+        imageView
+    }
+    
+    override open func prepareForReuse() {
+        super.prepareForReuse()
+        
+        content = nil
     }
 }

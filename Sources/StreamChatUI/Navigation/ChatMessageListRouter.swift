@@ -4,6 +4,7 @@
 
 import StreamChat
 import UIKit
+import AVKit
 
 /// A `NavigationRouter` subclass used for navigating from message-list-based view controllers.
 public typealias ChatMessageListRouter = _ChatMessageListRouter<NoExtraData>
@@ -109,30 +110,46 @@ open class _ChatMessageListRouter<ExtraData: ExtraDataTypes>:
     ///
     open func showImageGallery(
         message: _ChatMessage<ExtraData>,
-        initialAttachment: ChatMessageImageAttachment,
+        initialAttachmentId: AttachmentId,
         previews: [ImagePreviewable]
     ) {
         guard
-            let preview = previews.first(where: { $0.content?.id == initialAttachment.id })
+            let preview = previews.first(where: { $0.attachmentId == initialAttachmentId })
         else { return }
+        
         let imageGalleryVC = components.imagePreviewVC.init()
         imageGalleryVC.modalPresentationStyle = .overFullScreen
         imageGalleryVC.transitioningDelegate = self
-        imageGalleryVC.content = message
-        imageGalleryVC.initialAttachment = initialAttachment
+        imageGalleryVC.content = .init(
+            message: message,
+            currentPage: (message.mediaAttachments.map(\.id) + message.imageAttachments.map(\.id))
+                .firstIndex(of: initialAttachmentId) ?? 0
+        )
         imageGalleryVC.transitionController = zoomTransitionController
-        
         zoomTransitionController.presentedVCImageView = {
-            let cell = imageGalleryVC.attachmentsCollectionView.cellForItem(
-                at: IndexPath(item: imageGalleryVC.currentPage, section: 0)
-            ) as? _ImageCollectionViewCell<ExtraData>
-            return cell?.imageView
+            let indexPath = IndexPath(item: imageGalleryVC.content.currentPage, section: 0)
+            switch imageGalleryVC.items[indexPath.item] {
+            case .image:
+                let cell = imageGalleryVC.attachmentsCollectionView
+                    .cellForItem(at: indexPath) as? _ImageAttachmentCell<ExtraData>
+                return cell?.imageView
+            case .media:
+                let cell = imageGalleryVC.attachmentsCollectionView
+                    .cellForItem(at: indexPath) as? _MediaAttachmentCell<ExtraData>
+                
+                let imageView = UIImageView().withoutAutoresizingMaskConstraints
+                imageView.backgroundColor = .red
+                cell?.playerView.embed(imageView)
+                return imageView
+            }
         }
         zoomTransitionController.presentingImageView = {
-            let attachment = imageGalleryVC.images[imageGalleryVC.currentPage]
-            return previews.first(where: { $0.content?.id == attachment.id })?.imageView ?? previews.last?.imageView
+            let id = imageGalleryVC.items[imageGalleryVC.content.currentPage].attachmentId
+            
+            return previews.first(where: { $0.attachmentId == id })?.imageView ?? previews.last?.imageView
         }
         zoomTransitionController.fromImageView = preview.imageView
+
         rootViewController.present(imageGalleryVC, animated: true)
     }
 

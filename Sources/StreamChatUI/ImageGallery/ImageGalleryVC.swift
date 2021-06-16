@@ -16,26 +16,56 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
     AppearanceProvider,
     UICollectionViewDataSource,
     UICollectionViewDelegate,
-    UICollectionViewDelegateFlowLayout {
-    /// Content to display.
-    open var content: _ChatMessage<ExtraData>! {
-        didSet {
-            updateContentIfNeeded()
+    UICollectionViewDelegateFlowLayout,
+    ComponentsProvider {
+    public enum Item {
+        case media(ChatMessageMediaAttachment)
+        case image(ChatMessageImageAttachment)
+        
+        public var shareItem: URL {
+            switch self {
+            case let .media(media):
+                return media.assetURL
+            case let .image(image):
+                return image.imageURL
+            }
         }
-    }
-    
-    /// Images to display (`content.imageAttachments`).
-    open var images: [ChatMessageImageAttachment] = []
-    
-    /// Currently displayed image (indexed from 0).
-    open var currentPage: Int = 0 {
-        didSet {
-            updateContentIfNeeded()
+        
+        public var attachmentId: AttachmentId {
+            switch self {
+            case let .media(media):
+                return media.id
+            case let .image(image):
+                return image.id
+            }
         }
     }
 
-    /// Attachment to be displayed initially.
-    open var initialAttachment: ChatMessageImageAttachment!
+    public struct Content {
+        public var message: _ChatMessage<ExtraData>
+        public var currentPage: Int
+        
+        public init(
+            message: _ChatMessage<ExtraData>,
+            currentPage: Int = 0
+        ) {
+            self.message = message
+            self.currentPage = currentPage
+        }
+    }
+    
+    /// Content to display.
+    open var content: Content! {
+        didSet {
+            updateContentIfNeeded()
+        }
+    }
+    
+    open var items: [Item] {
+        let videos: [Item] = content.message.mediaAttachments.map { .media($0) }
+        let images: [Item] = content.message.imageAttachments.map { .image($0) }
+        return videos + images
+    }
     
     /// Controller for handling the transition for dismissal
     open var transitionController: ZoomTransitionController!
@@ -81,14 +111,22 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
     /// Button for closing this view controller.
     public private(set) lazy var closeButton = CloseButton()
     
+    public private(set) lazy var videoPlaybackBar = _VideoPlaybackView<ExtraData>()
+        .withoutAutoresizingMaskConstraints
+    
     /// Button for sharing content.
     public private(set) lazy var shareButton = ShareButton()
     
+    public private(set) var topBarTopConstraint: NSLayoutConstraint?
+    
+    public private(set) var bottomBarBottomConstraint: NSLayoutConstraint?
+
     override open func setUpAppearance() {
         super.setUpAppearance()
         
         topBarView.backgroundColor = appearance.colorPalette.popoverBackground
         bottomBarView.backgroundColor = appearance.colorPalette.popoverBackground
+        videoPlaybackBar.backgroundColor = appearance.colorPalette.popoverBackground
         
         userLabel.font = appearance.fonts.bodyBold
         userLabel.textColor = appearance.colorPalette.text
@@ -111,17 +149,21 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
         attachmentsFlowLayout.scrollDirection = .horizontal
         attachmentsFlowLayout.minimumInteritemSpacing = 0
         attachmentsFlowLayout.minimumLineSpacing = 0
-        
+                
+        attachmentsCollectionView.register(
+            _ImageAttachmentCell<ExtraData>.self,
+            forCellWithReuseIdentifier: _ImageAttachmentCell<ExtraData>.reuseId
+        )
+        attachmentsCollectionView.register(
+            _MediaAttachmentCell<ExtraData>.self,
+            forCellWithReuseIdentifier: _MediaAttachmentCell<ExtraData>.reuseId
+        )
         attachmentsCollectionView.contentInsetAdjustmentBehavior = .never
         attachmentsCollectionView.isPagingEnabled = true
         attachmentsCollectionView.alwaysBounceVertical = false
         attachmentsCollectionView.alwaysBounceHorizontal = true
         attachmentsCollectionView.dataSource = self
         attachmentsCollectionView.delegate = self
-        attachmentsCollectionView.register(
-            _ImageCollectionViewCell<ExtraData>.self,
-            forCellWithReuseIdentifier: _ImageCollectionViewCell<ExtraData>.reuseId
-        )
         
         closeButton.addTarget(self, action: #selector(closeButtonTapped), for: .touchUpInside)
         shareButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
@@ -137,7 +179,9 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
         view.embed(attachmentsCollectionView)
         
         view.addSubview(topBarView)
-        topBarView.pin(anchors: [.leading, .trailing, .top], to: view)
+        topBarView.pin(anchors: [.leading, .trailing], to: view)
+        topBarTopConstraint = topBarView.topAnchor.constraint(equalTo: view.topAnchor)
+        topBarTopConstraint?.isActive = true
         
         let topBarContainerStackView = ContainerStackView()
             .withoutAutoresizingMaskConstraints
@@ -162,7 +206,9 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
         topBarContainerStackView.addArrangedSubview(UIView.spacer(axis: .horizontal))
         
         view.addSubview(bottomBarView)
-        bottomBarView.pin(anchors: [.leading, .trailing, .bottom], to: view)
+        bottomBarView.pin(anchors: [.leading, .trailing], to: view)
+        bottomBarBottomConstraint = bottomBarView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        bottomBarBottomConstraint?.isActive = true
         
         let bottomBarContainerStackView = ContainerStackView()
             .withoutAutoresizingMaskConstraints
@@ -178,31 +224,34 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
         currentPhotoLabel.pin(anchors: [.centerX], to: view)
         
         bottomBarContainerStackView.addArrangedSubview(.spacer(axis: .horizontal))
+        
+        view.addSubview(videoPlaybackBar)
+        videoPlaybackBar.pin(anchors: [.leading, .trailing], to: view)
+        videoPlaybackBar.bottomAnchor.constraint(equalTo: bottomBarView.topAnchor).isActive = true
     }
     
     override open func viewDidLoad() {
         super.viewDidLoad()
-        
-        attachmentsCollectionView.layoutIfNeeded()
-
-        let initialPage = images
-            .firstIndex(where: { $0.id == initialAttachment.id }) ?? 0
-        currentPage = initialPage
-        let contentOffset = CGPoint(
-            x: attachmentsCollectionView.bounds.width * CGFloat(currentPage),
-            y: attachmentsCollectionView.contentOffset.y
-        )
-        attachmentsCollectionView.setContentOffset(contentOffset, animated: false)
+                
+        attachmentsCollectionView.reloadData()
+        attachmentsCollectionView.performBatchUpdates(nil) { _ in
+            self.updateContent()
+            self.attachmentsCollectionView.scrollToItem(
+                at: .init(item: self.content.currentPage, section: 0),
+                at: .centeredHorizontally,
+                animated: false
+            )
+        }
     }
     
     override open func updateContent() {
         super.updateContent()
 
-        if content.author.isOnline {
+        if content.message.author.isOnline {
             dateLabel.text = L10n.Message.Title.online
         } else {
             if
-                let lastActive = content.author.lastActiveAt,
+                let lastActive = content.message.author.lastActiveAt,
                 let minutes = dateFormatter.string(from: lastActive, to: Date()) {
                 dateLabel.text = L10n.Message.Title.seeMinutesAgo(minutes)
             } else {
@@ -210,13 +259,16 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
             }
         }
         
-        images = content.imageAttachments
+        userLabel.text = content.message.author.name
 
-        userLabel.text = content.author.name
-
-        currentPhotoLabel.text = L10n.currentSelection(currentPage + 1, images.count)
+        currentPhotoLabel.text = L10n.currentSelection(content.currentPage + 1, items.count)
         
-        attachmentsCollectionView.reloadData()
+        let videoCell = attachmentsCollectionView.cellForItem(
+            at: .init(item: content.currentPage, section: 0)
+        ) as? _MediaAttachmentCell<ExtraData>
+        
+        videoPlaybackBar.player = videoCell?.player
+        videoPlaybackBar.isHidden = videoPlaybackBar.player == nil
     }
     
     /// Called whenever user pans with a given `gestureRecognizer`.
@@ -245,9 +297,9 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
     /// Called when `shareButton` is tapped.
     @objc
     open func shareButtonTapped() {
-        let imageURL = images[currentPage].payload.imageURL
+        let shareItem = items[content.currentPage].shareItem
         let activityViewController = UIActivityViewController(
-            activityItems: [imageURL],
+            activityItems: [shareItem],
             applicationActivities: nil
         )
         present(activityViewController, animated: true)
@@ -255,36 +307,55 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
     
     /// Updates `currentPage`.
     open func updateCurrentPage() {
-        if attachmentsCollectionView.bounds.width != 0 {
-            currentPage = Int(attachmentsCollectionView.contentOffset.x + attachmentsCollectionView.bounds.width / 2) /
-                Int(attachmentsCollectionView.bounds.width)
-                
-        } else {
-            currentPage = 0
-        }
+        content.currentPage = Int(attachmentsCollectionView.contentOffset.x + attachmentsCollectionView.bounds.width / 2) /
+            Int(attachmentsCollectionView.bounds.width)
     }
     
     open func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        images.count
+        items.count
     }
     
     open func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let image = images[indexPath.item]
-        let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: _ImageCollectionViewCell<ExtraData>.reuseId,
-            for: indexPath
-        ) as! _ImageCollectionViewCell<ExtraData>
-        cell.content = image
-        cell.imageSingleTapped = { [weak self] in
+        let item = items[indexPath.item]
+        
+        let cell: _GalleryAttachmentCell<ExtraData>
+        switch item {
+        case let .image(image):
+            let imageCell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: _ImageAttachmentCell<ExtraData>.reuseId,
+                for: indexPath
+            ) as! _ImageAttachmentCell<ExtraData>
+            imageCell.content = image
+            cell = imageCell
+        case let .media(media):
+            let mediaCell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: _MediaAttachmentCell<ExtraData>.reuseId,
+                for: indexPath
+            ) as! _MediaAttachmentCell<ExtraData>
+            mediaCell.content = media
+            cell = mediaCell
+        }
+        
+        cell.didTapOnce = { [weak self] in
             self?.imageSingleTapped()
         }
+        
         return cell
     }
     
     /// Triggered when the current image is single tapped.
     open func imageSingleTapped() {
-        topBarView.setAnimatedly(hidden: !topBarView.isHidden)
-        bottomBarView.setAnimatedly(hidden: !bottomBarView.isHidden)
+        let areBarsHidden = bottomBarBottomConstraint?.constant != 0
+        
+        topBarTopConstraint?.constant = areBarsHidden ? 0 : -topBarView.frame.height
+        bottomBarBottomConstraint?.constant = areBarsHidden ? 0 : bottomBarView.frame.height
+
+        Animate {
+            self.topBarView.alpha = areBarsHidden ? 1 : 0
+            self.bottomBarView.alpha = areBarsHidden ? 1 : 0
+            self.videoPlaybackBar.backgroundColor = areBarsHidden ? self.bottomBarView.backgroundColor : .clear
+            self.view.layoutIfNeeded()
+        }
     }
     
     override open func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -305,12 +376,16 @@ open class _ImageGalleryVC<ExtraData: ExtraDataTypes>:
         targetContentOffsetForProposedContentOffset proposedContentOffset: CGPoint
     ) -> CGPoint {
         CGPoint(
-            x: CGFloat(currentPage) * collectionView.bounds.width,
+            x: CGFloat(content.currentPage) * collectionView.bounds.width,
             y: proposedContentOffset.y
         )
     }
     
-    public func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+    open func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         updateCurrentPage()
+    }
+    
+    open func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        videoPlaybackBar.player?.pause()
     }
 }

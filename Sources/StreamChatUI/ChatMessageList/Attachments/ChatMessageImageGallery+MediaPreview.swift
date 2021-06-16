@@ -8,9 +8,13 @@ import UIKit
 
 typealias MediaAttachmentCellView = _MediaAttachmentCellView<NoExtraData>
 
-open class _MediaAttachmentCellView<ExtraData: ExtraDataTypes>: _View, ThemeProvider {
+open class _MediaAttachmentCellView<ExtraData: ExtraDataTypes>: _View, ThemeProvider, ImagePreviewable {
     public var content: ChatMessageMediaAttachment? {
         didSet { updateContentIfNeeded() }
+    }
+    
+    public var attachmentId: AttachmentId? {
+        content?.id
     }
 
     public var didTapOnAttachment: ((ChatMessageMediaAttachment) -> Void)?
@@ -95,7 +99,7 @@ open class _MediaAttachmentCellView<ExtraData: ExtraDataTypes>: _View, ThemeProv
         didTapOnAttachment?(attachment)
     }
     
-    @objc open func didTapOnPlay(_ recognizer: UITapGestureRecognizer) {
+    @objc open func didTapOnPlay(_ recognizer: UIButton) {
         guard let attachment = content else { return }
         
         didTapOnAttachment?(attachment)
