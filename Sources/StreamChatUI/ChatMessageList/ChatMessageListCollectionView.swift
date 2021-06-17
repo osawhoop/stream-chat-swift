@@ -89,12 +89,12 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     }
     
     open func setUp() {
-        contentSizeObservation = observe(\.contentSize) { cv, _ in
-            print("""
-            ----------
-            ⚠️ Content size changed: \(cv.contentSize)
-            ----------
-            """)
+        contentSizeObservation = observe(\.contentSize) { _, _ in
+//            print("""
+//            ----------
+//            ⚠️ Content size changed: \(cv.contentSize)
+//            ----------
+//            """)
         }
 
         // Setup `contentOffset` observation so `delegate` is free for anyone that wants to use it
@@ -246,7 +246,7 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         // Before committing the change the scroll behavior needs opportunity to capture
         // the pre-update state
         var scrollBehavior = scrollBehavior
-        scrollBehavior?.preUpdate(self)
+//        scrollBehavior?.preUpdate(self)
 
         Animate(isAnimated: isAnimated) {
             self.performBatchUpdates {
@@ -270,7 +270,7 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
                     self.reloadItems(at: indexPaths)
                 }
 
-                scrollBehavior?.postUpdate(self)
+//                scrollBehavior?.postUpdate(self)
 
                 completion?(flag)
             }

@@ -49,7 +49,7 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         // cell during animations.
         messageContentView?.bottomAnchor
             .pin(lessThanOrEqualTo: contentView.bottomAnchor)
-            .with(priority: .streamAlmostRequire)
+            .with(priority: .required)
             .isActive = true
         
         messageContentView!.setUpLayoutIfNeeded(options: options, attachmentViewInjectorType: attachmentViewInjectorType)
@@ -75,7 +75,7 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
             width: preferredAttributes.frame.width,
             height: ceil(preferredAttributes.frame.height)
         )
-
+        
         // We need to communicate the current layout options back the the layout such that
         // they can be used later for animation purposes.
         if let attributes = preferredAttributes as? MessageCellLayoutAttributes {
@@ -95,6 +95,21 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         guard let attributes = layoutAttributes as? MessageCellLayoutAttributes else {
             return
         }
+        
+//        UIView.performWithoutAnimation {
+//
+//            messageContentView?.setNeedsLayout()
+//            messageContentView?.layoutIfNeeded()
+//
+//            contentView.setNeedsLayout()
+//            contentView.layoutIfNeeded()
+//
+//            setNeedsLayout()
+//            layoutIfNeeded()
+        ////
+        ////
+        ////            messageContentView?.layoutIfNeeded()
+//        }
 //
 //        if attributes.isCachedAttribute {
 //            UIView.performWithoutAnimation {
@@ -162,20 +177,23 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
 //            messageContentView?.layoutIfNeeded()
 //        }
 
-//        if attributes.isChangeAnimated {
-//            isHidden = false
+        if attributes.isChangeAnimated {
+            isHidden = false
 
-//        } else {
-        // These attributes can be invalid. We rather hide the view to prevent any
-        // visual glitches and unwanted animations
-//            isHidden = true
+        } else {
+//         These attributes can be invalid. We rather hide the view to prevent any
+//         visual glitches and unwanted animations
+            isHidden = true
 
-//            UIView.performWithoutAnimation {
-//                messageContentView?.setNeedsLayout()
-//                messageContentView?.layoutIfNeeded()
-//            }
-//
-//            layer.removeAllAnimations()
-//        }
+            UIView.performWithoutAnimation {
+                layer.removeAllAnimations()
+                
+                contentView.setNeedsLayout()
+                contentView.layoutIfNeeded()
+                
+                messageContentView?.setNeedsLayout()
+                messageContentView?.layoutIfNeeded()
+            }
+        }
     }
 }
