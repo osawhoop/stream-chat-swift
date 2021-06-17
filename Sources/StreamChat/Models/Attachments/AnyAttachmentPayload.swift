@@ -44,7 +44,8 @@ public extension AnyAttachmentPayload {
     /// Creates an instance of `AnyAttachmentPayload` with the URL referencing to a local file.
     ///
     /// The resulting attachment will have `ImageAttachmentPayload` if `attachmentType == .image`.
-    /// If the type is different from `.image` the attachment will have payload of `FileAttachmentPayload`
+    /// The resulting attachment will have `VideoAttachmentPayload` if `attachmentType == .video`.
+    /// If the type is different than `.image` and `.video` the attachment will have payload of `FileAttachmentPayload`
     /// type.
     ///
     /// If attached to the new message the attachment with the given payload will be immediately
@@ -66,6 +67,12 @@ public extension AnyAttachmentPayload {
                 title: localFileURL.lastPathComponent,
                 imageURL: localFileURL,
                 imagePreviewURL: localFileURL
+            )
+        case .video:
+            payload = VideoAttachmentPayload(
+                title: localFileURL.lastPathComponent,
+                videoURL: localFileURL,
+                file: file
             )
         default:
             payload = FileAttachmentPayload(
