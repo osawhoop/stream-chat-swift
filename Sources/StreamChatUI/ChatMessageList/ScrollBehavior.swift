@@ -23,30 +23,26 @@ public protocol ScrollBehavior {
 public struct FixScrollPosition: ScrollBehavior {
     public var areUpdatesAnimated: Bool
 
-    var visualDistanceFromBottom: CGFloat?
+    var originalPosition: ScrollPosition?
 
     public init(areUpdatesAnimated: Bool = false) {
         self.areUpdatesAnimated = areUpdatesAnimated
     }
 
     public mutating func preUpdate(_ collectionView: UICollectionView) {
-        let contentSizeHeight = collectionView.contentSize.height
-        let yContentOffset = collectionView.contentOffset.y
-
-        visualDistanceFromBottom = contentSizeHeight - yContentOffset - collectionView.visibleHeight
+        originalPosition = collectionView.snapshotScrollPosition()
     }
 
     public mutating func postUpdate(_ collectionView: UICollectionView) {
-        guard let previousDistance = visualDistanceFromBottom else {
+        guard let originalPosition = self.originalPosition else {
             log.assertionFailure("Can't restore scroll position because `preUpdate` method wasn't called.")
             return
         }
 
-        let contentSizeHeight = collectionView.contentSize.height
-        let yContentOffset = contentSizeHeight - previousDistance - collectionView.visibleHeight
-
+        let target = collectionView.resolveTargetContentOffset(originalPosition)
+        
         Animate {
-            collectionView.setContentOffset(CGPoint(x: 0, y: yContentOffset), animated: true)
+            collectionView.setContentOffset(target, animated: true)
         }
     }
 }
@@ -70,13 +66,18 @@ public struct ScrollToLatestMessage: ScrollBehavior {
     }
 
     public mutating func postUpdate(_ collectionView: UICollectionView) {
-        // Then scroll with animation to reveal the latest message
-        Animate {
-            let bottomOffset = collectionView.contentSize.height
-                - collectionView.visibleHeight
-                - collectionView.contentInset.top
+        DispatchQueue.main.async {
+            UIView.performWithoutAnimation {
+                collectionView.scrollToItem(at: IndexPath(item: 1, section: 0), at: .bottom, animated: false)
+                
+                collectionView.setNeedsLayout()
+                collectionView.layoutIfNeeded()
+            }
 
-            collectionView.setContentOffset(CGPoint(x: 0, y: bottomOffset), animated: true)
+            // Then scroll with animation to reveal the latest message
+            Animate {
+                collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .bottom, animated: false)
+            }
         }
     }
 }

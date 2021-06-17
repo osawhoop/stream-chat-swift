@@ -104,6 +104,8 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     /// It's used to change the message list's height based on the keyboard visibility.
     private var messageComposerBottomConstraint: NSLayoutConstraint?
     
+    open var didPerformInitialScroll = false
+    
     /// Timer used to update the online status of member in the chat channel
     private var timer: Timer?
     
@@ -206,6 +208,17 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         resignFirstResponder()
         
         keyboardObserver.unregister()
+    }
+    
+    override open func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        
+        if !didPerformInitialScroll {
+            DispatchQueue.main.async {
+                self.scrollToMostRecentMessage(animated: false)
+            }
+            didPerformInitialScroll = true
+        }
     }
     
     /// Returns layout options for the message on given `indexPath`.
@@ -368,7 +381,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     open func scrollBehavior(for changes: [ListChange<_ChatMessage<ExtraData>>]) -> ScrollBehavior? {
         // If there are more than one update always
         guard changes.count == 1, let change = changes.first else {
-            return FixScrollPosition()
+            return nil
         }
 
         switch change {
@@ -376,7 +389,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
             return ScrollToLatestMessage()
 
         default:
-            return FixScrollPosition(areUpdatesAnimated: true)
+            return nil
         }
     }
 
@@ -541,8 +554,8 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
     open func showTypingIndicator(typingMembers: [_ChatChannelMember<ExtraData.User>]) {
         if typingIndicatorView.isHidden {
             Animate {
-                self.collectionView.contentInset.bottom += self.typingIndicatorViewHeight
-                self.collectionView.scrollIndicatorInsets.bottom += self.typingIndicatorViewHeight
+//                self.collectionView.contentInset.bottom += self.typingIndicatorViewHeight
+//                self.collectionView.scrollIndicatorInsets.bottom += self.typingIndicatorViewHeight
             }
 
             if collectionView.isLastCellVisible {
@@ -569,8 +582,8 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         typingIndicatorView.isHidden = true
 
         Animate {
-            self.collectionView.contentInset.bottom -= self.typingIndicatorViewHeight
-            self.collectionView.scrollIndicatorInsets.bottom -= self.typingIndicatorViewHeight
+//            self.collectionView.contentInset.bottom -= self.typingIndicatorViewHeight
+//            self.collectionView.scrollIndicatorInsets.bottom -= self.typingIndicatorViewHeight
         }
     }
     

@@ -91,14 +91,16 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     open func setUp() {
         contentSizeObservation = observe(\.contentSize) { _, _ in
 //            print("""
-//            ----------
-//            ⚠️ Content size changed: \(cv.contentSize)
-//            ----------
+//            💡 CONTENT SIZE: \(cv.contentSize)
 //            """)
         }
 
         // Setup `contentOffset` observation so `delegate` is free for anyone that wants to use it
         contentOffsetObservation = observe(\.contentOffset) { cv, _ in
+//            print("""
+//            💡 CONTENT OFFSET: \(cv.contentOffset)
+//            """)
+            
             /// To display correct date we use bottom edge of `dateView` (we use `cv.layoutMargins.top` for both vertical offsets of `dateView`
             let dateViewRefPoint = CGPoint(
                 x: cv.scrollOverlayView.center.x,
@@ -240,13 +242,13 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         scrollBehavior: ScrollBehavior? = nil,
         completion: ((Bool) -> Void)? = nil
     ) {
-        setNeedsLayout()
-        layoutIfNeeded()
+//        setNeedsLayout()
+//        layoutIfNeeded()
 
         // Before committing the change the scroll behavior needs opportunity to capture
         // the pre-update state
         var scrollBehavior = scrollBehavior
-//        scrollBehavior?.preUpdate(self)
+        scrollBehavior?.preUpdate(self)
 
         Animate(isAnimated: isAnimated) {
             self.performBatchUpdates {
@@ -270,7 +272,7 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
                     self.reloadItems(at: indexPaths)
                 }
 
-//                scrollBehavior?.postUpdate(self)
+                scrollBehavior?.postUpdate(self)
 
                 completion?(flag)
             }
