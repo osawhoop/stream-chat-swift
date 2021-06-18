@@ -8,7 +8,7 @@ public extension Int {
     /// A default channels page size.
     static let channelsPageSize = 20
     /// A default messages page size.
-    static let messagesPageSize = 2
+    static let messagesPageSize = 4
     /// A default users page size.
     static let usersPageSize = 30
     /// A default channel members page size.
@@ -21,7 +21,7 @@ public extension Int {
 /// Used everywhere except `ChannelQuery`. (See `MessagesPagination`)
 public struct Pagination: Encodable, Equatable {
     /// A page size.
-    public let pageSize: Int
+    public var pageSize: Int = 10
     /// An offset.
     public let offset: Int
     
@@ -46,20 +46,20 @@ public struct Pagination: Encodable, Equatable {
 
 public struct MessagesPagination: Encodable, Equatable {
     /// A page size
-    let pageSize: Int?
+    let pageSize: Int? = 10
     /// Parameter for pagination.
     let parameter: PaginationParameter?
-    
+
     /// Failable initializer for attempts of creating invalid pagination.
     init?(pageSize: Int? = nil, parameter: PaginationParameter? = nil) {
         guard pageSize != nil, parameter != nil else { return nil }
-        self.pageSize = pageSize
+//        self.pageSize = pageSize
         self.parameter = parameter
     }
     
     /// Initializer with required page size.
     init(pageSize: Int, parameter: PaginationParameter? = nil) {
-        self.pageSize = pageSize
+//        self.pageSize = pageSize
         self.parameter = parameter
     }
     

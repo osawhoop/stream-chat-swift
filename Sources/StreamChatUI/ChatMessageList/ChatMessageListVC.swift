@@ -123,10 +123,7 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         userSuggestionSearchController.search(term: nil)
         
         channelController.setDelegate(self)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            self.channelController.synchronize()
-        }
+        channelController.synchronize()
 
         if channelController.channel?.isDirectMessageChannel == true {
             timer = Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { [weak self] _ in
@@ -281,8 +278,10 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
         willDisplay cell: UICollectionViewCell,
         forItemAt indexPath: IndexPath
     ) {
-        if indexPath.row + 1 >= collectionView.numberOfItems(inSection: 0) {
-//            channelController.loadPreviousMessages()
+        if indexPath.row + 1 >= collectionView.numberOfItems(inSection: 0) && channelController.state == .remoteDataFetched {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                self.channelController.loadPreviousMessages()
+            }
         }
     }
     
@@ -300,8 +299,6 @@ open class _ChatMessageListVC<ExtraData: ExtraDataTypes>:
             // Hide the button immediately. Temporary solution until CIS-881 is implemented.
             setScrollToLatestMessageButton(visible: false)
         }
-
-        print("Content offset: \(scrollView.contentOffset.y)")
     }
     
     /// Scrolls to most recent message

@@ -64,7 +64,7 @@ open class _ChatChannelListVC<ExtraData: ExtraDataTypes>: _ViewController,
         super.viewDidAppear(animated)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-//            self.collectionView(self.collectionView, didSelectItemAt: IndexPath(item: 0, section: 0))
+//            self.collectionView(self.collectionView, didSelectItemAt: IndexPath(item: 2, section: 0))
         }
     }
 

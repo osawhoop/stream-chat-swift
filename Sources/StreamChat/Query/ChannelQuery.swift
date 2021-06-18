@@ -35,7 +35,7 @@ public struct _ChannelQuery<ExtraData: ExtraDataTypes>: Encodable {
     /// Channel type this query handles.
     public let type: ChannelType
     /// A pagination for messages (see `MessagesPagination`).
-    public var pagination: MessagesPagination?
+    public var pagination: MessagesPagination? = .init(pageSize: .messagesPageSize)
     /// A number of members for the channel to be retrieved.
     public let membersLimit: Int?
     /// A number of watchers for the channel to be retrieved.

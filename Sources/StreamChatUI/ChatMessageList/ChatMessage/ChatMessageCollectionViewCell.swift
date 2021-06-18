@@ -24,6 +24,8 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         messageContentView?.prepareForReuse()
     }
 
+    var topConstraint: NSLayoutConstraint?
+
     public func setMessageContentIfNeeded(
         contentViewClass: _ChatMessageContentView<ExtraData>.Type,
         attachmentViewInjectorType: _AttachmentViewInjector<ExtraData>.Type?,
@@ -42,16 +44,12 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         // (where the subviews are instantiated and configured) to use `components` and `appearance`
         // taken from the responder chain.
         contentView.addSubview(messageContentView!)
-        
-        messageContentView?.pin(anchors: [.leading, .top, .trailing], to: contentView)
-        
-        // Bottom anchor is pinned with a lower priority to make the content view stick to the top of the
-        // cell during animations.
-        messageContentView?.bottomAnchor
-            .pin(lessThanOrEqualTo: contentView.bottomAnchor)
-            .with(priority: .required)
-            .isActive = true
-        
+
+        messageContentView?.pin(anchors: [.leading, .bottom, .trailing], to: contentView)
+
+        topConstraint = messageContentView?.topAnchor.pin(equalTo: contentView.topAnchor)
+        topConstraint?.isActive = true
+
         messageContentView!.setUpLayoutIfNeeded(options: options, attachmentViewInjectorType: attachmentViewInjectorType)
     }
 
@@ -79,7 +77,7 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         // We need to communicate the current layout options back the the layout such that
         // they can be used later for animation purposes.
         if let attributes = preferredAttributes as? MessageCellLayoutAttributes {
-            attributes.layoutOptions = messageContentView?.layoutOptions
+            attributes.previousLayoutOptions = messageContentView?.layoutOptions
 
             print("    -> preferredLayoutAttributesFitting \(layoutAttributes.indexPath) | \(attributes.label)")
 
@@ -95,7 +93,94 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         guard let attributes = layoutAttributes as? MessageCellLayoutAttributes else {
             return
         }
-        
+
+        messageContentView?.isHidden = layoutAttributes.isHidden
+
+        if attributes.previousLayoutOptions?.contains(.reactions) == false
+            && messageContentView?.layoutOptions.contains(.reactions) == true
+        {
+            //            window?.layer.speed = 0.1
+
+//            let reactionBubbleHeight = messageContentView?.reactionsBubbleView?.heightAnchor.constraint(equalToConstant: 0)
+//            let reactionBubbleWidth = messageContentView?.reactionsBubbleView?.widthAnchor.constraint(equalToConstant: 0)
+//            let reactionHeight = messageContentView?.reactionsView?.heightAnchor.constraint(equalToConstant: 0)
+
+            if attributes.isInitialAttributes {
+                UIView.performWithoutAnimation {
+                    //                reactionBubbleHeight?.isActive = true
+                    //                reactionHeight?.isActive = true
+                    //                reactionBubbleWidth?.isActive = true
+
+                    topConstraint?.isActive = false
+
+                    messageContentView?.isHidden = true
+                    messageContentView?.reactionsBubbleView?.transform = CGAffineTransform(scaleX: 0.05, y: 0.05)
+                        .concatenating(.init(translationX: 10, y: frame.height / 2.0))
+                        .concatenating(.init(rotationAngle: -3.14 / 4.0))
+
+                    messageContentView?.reactionsBubbleView?.alpha = 0
+
+                    messageContentView?.setNeedsLayout()
+
+                    self.setNeedsLayout()
+                    self.layoutIfNeeded()
+                }
+            } else {
+                messageContentView?.reactionsBubbleView?.transform = .identity
+                messageContentView?.reactionsBubbleView?.alpha = 1
+
+                messageContentView?.alpha = 1
+
+                topConstraint?.isActive = true
+
+                messageContentView?.reactionsBubbleView?.layoutIfNeeded()
+
+                messageContentView?.setNeedsLayout()
+                messageContentView?.layoutIfNeeded()
+
+                messageContentView?.setNeedsLayout()
+
+                setNeedsLayout()
+                layoutIfNeeded()
+
+//                UIView.animate(
+//                    withDuration: 1,
+//                    delay: 0,
+//                    usingSpringWithDamping: 0.5,
+//                    initialSpringVelocity: 10,
+//                    options: [],
+//                    animations: {
+//                        self.messageContentView?.reactionsBubbleView?.transform = .identity
+//                        self.messageContentView?.reactionsBubbleView?.alpha = 1
+//
+//                        self.messageContentView?.alpha = 1
+//
+//                        self.topConstraint?.isActive = true
+//
+//                        self.messageContentView?.reactionsBubbleView?.layoutIfNeeded()
+//
+//                        self.messageContentView?.setNeedsLayout()
+//                        self.messageContentView?.layoutIfNeeded()
+//
+//                        messageContentView?.setNeedsLayout()
+//
+//                        self.setNeedsLayout()
+//                        self.layoutIfNeeded()
+//
+//                    },
+//                    completion: nil
+//                )
+            }
+
+            //            reactionBubbleHeight?.isActive = false
+            //            reactionHeight?.isActive = false
+            //            reactionBubbleWidth?.isActive = false
+
+            //            }
+
+            //            self.messageContentView?.layoutIfNeeded()
+        }
+
 //        UIView.performWithoutAnimation {
 //
 //            messageContentView?.setNeedsLayout()
@@ -177,23 +262,25 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
 //            messageContentView?.layoutIfNeeded()
 //        }
 
-        if attributes.isChangeAnimated {
-            isHidden = false
+        ///
 
-        } else {
-//         These attributes can be invalid. We rather hide the view to prevent any
-//         visual glitches and unwanted animations
-            isHidden = true
-
-            UIView.performWithoutAnimation {
-                layer.removeAllAnimations()
-                
-                contentView.setNeedsLayout()
-                contentView.layoutIfNeeded()
-                
-                messageContentView?.setNeedsLayout()
-                messageContentView?.layoutIfNeeded()
-            }
-        }
+//        if attributes.isChangeAnimated {
+//            isHidden = false
+//
+//        } else {
+        ////         These attributes can be invalid. We rather hide the view to prevent any
+        ////         visual glitches and unwanted animations
+//            isHidden = true
+//
+//            UIView.performWithoutAnimation {
+//                contentView.setNeedsLayout()
+//                contentView.layoutIfNeeded()
+//
+//                messageContentView?.setNeedsLayout()
+//                messageContentView?.layoutIfNeeded()
+//            }
+//
+//            layer.removeAllAnimations()
+//        }
     }
 }

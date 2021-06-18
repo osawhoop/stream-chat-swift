@@ -23,7 +23,7 @@ public protocol ScrollBehavior {
 public struct FixScrollPosition: ScrollBehavior {
     public var areUpdatesAnimated: Bool
 
-    var originalPosition: ScrollPosition?
+    var originalPosition: ScrollPositionSnapshot?
 
     public init(areUpdatesAnimated: Bool = false) {
         self.areUpdatesAnimated = areUpdatesAnimated
