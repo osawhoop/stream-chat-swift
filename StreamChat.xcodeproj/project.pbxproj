@@ -284,6 +284,7 @@
 		79940B89258398A500791EAE /* StreamChat.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 799C941B247D2F80001F1104 /* StreamChat.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		79940B8C258398A500791EAE /* StreamChatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 790881FD25432B7200896F03 /* StreamChatUI.framework */; };
 		79940B8D258398A500791EAE /* StreamChatUI.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 790881FD25432B7200896F03 /* StreamChatUI.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		799983C4267F84F800F29B99 /* ChatMessageCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7908832E254876C100896F03 /* ChatMessageCollectionViewCell.swift */; };
 		799ADAAF2563FFA1006D43F9 /* Nuke in Frameworks */ = {isa = PBXBuildFile; productRef = 799ADAAE2563FFA1006D43F9 /* Nuke */; };
 		799B5DC5253081C900C108FB /* DevicePayloads.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799B5DC4253081C900C108FB /* DevicePayloads.swift */; };
 		799BE2EA248A8C9D00DAC8A0 /* WebSocketReconnectionStrategy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799BE2E9248A8C9D00DAC8A0 /* WebSocketReconnectionStrategy.swift */; };
@@ -6232,6 +6233,7 @@
 				E74DB0A92656631700508D22 /* ChatChannelListRouter_Mock.swift in Sources */,
 				79567F43266F9EF7007EADD3 /* CommandButton_Documentation_Tests.swift in Sources */,
 				E74DB10726567FFA00508D22 /* ChatChannelListItemView_Documentation_Tests.swift in Sources */,
+				799983C4267F84F800F29B99 /* ChatMessageCollectionViewCell.swift in Sources */,
 				E74DB0AF2656631700508D22 /* AssertAsync.swift in Sources */,
 				E74DB0BB2656631700508D22 /* AssertSnapshot.swift in Sources */,
 				E74DB0BE2656631700508D22 /* TemporaryData.swift in Sources */,

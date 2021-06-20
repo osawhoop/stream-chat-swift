@@ -125,6 +125,8 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
 
     open var cachedCurrentItems: [LayoutItem] = []
 
+    open var reloadingItems: Set<IndexPath> = []
+    
     /// You can improve scroll performance by tweaking this number. In general, it's better to keep this number a little
     /// bit higher than the average cell height.
     open var estimatedItemHeight: CGFloat = 400
@@ -340,12 +342,13 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
                 
             case .reload:
                 let indexPath = update.indexPathBeforeUpdate!
-                let originalHeight = currentItems[indexPath.item].height
-                currentItems[indexPath.item].height = estimatedItemHeight
-                preUpdateScrollPositionSnapshot?.adjustPosition(
-                    changedItemIndexPath: indexPath,
-                    delta: originalHeight - estimatedItemHeight
-                )
+//                let originalHeight = currentItems[indexPath.item].height
+//                currentItems[indexPath.item].height = estimatedItemHeight
+//                preUpdateScrollPositionSnapshot?.adjustPosition(
+//                    changedItemIndexPath: indexPath,
+//                    delta: originalHeight - estimatedItemHeight
+//                )
+                reloadingItems.insert(indexPath)
 
             case .none: break
             @unknown default: break
@@ -767,7 +770,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
 
         if indexPath.item != 0 && appearingItems.contains(indexPath) {
             // Newly inserted messages at other than 0-0 index paths is a pagination insert -> no animations
-            attributes.isChangeAnimated = false
+//            attributes.isChangeAnimated = false
         }
 
         if isAnimatedBoundsChangeInProgress {
@@ -794,19 +797,53 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
     }
 
     override open func initialLayoutAttributesForAppearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        if previousItems.indices.contains(itemIndexPath.item) {
-            let previous = currentItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionView!.bounds.width)
-            previous.isInitialAttributes = true
-            return previous
-        } else {
-            return currentItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionView!.bounds.width)
+        guard reloadingItems.contains(itemIndexPath) else {
+            // New message
+            if itemIndexPath == [0, 0] {
+                let attr = currentItems[itemIndexPath.item]
+                    .attribute(for: itemIndexPath.item, width: collectionViewContentSize.width)
+                
+                attr.isInitialAttributes = true
+                attr.transform = CGAffineTransform(translationX: 0, y: 100)
+                attr.isChangeAnimated = true
+                
+                return attr
+            }
+            
+            if previousItems.indices.contains(previousItems.index(0, offsetBy: itemIndexPath.item)) {
+                let attr = previousItems[itemIndexPath.item]
+                    .attribute(for: itemIndexPath.item, width: collectionViewContentSize.width)
+                return attr
+            }
+            return nil
         }
+        
+        let attr = previousItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionViewContentSize.width)
+        attr.isInitialAttributes = true
+//        attr.isChangeAnimated = false
+
+//        if previousItems.indices.contains(itemIndexPath.item) {
+//            let previous = currentItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionView!.bounds.width)
+//            previous.isInitialAttributes = true
+//            return previous
+//        } else {
+//            return currentItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionView!.bounds.width)
+//        }
+        return attr
     }
 
     override open func finalLayoutAttributesForDisappearingItem(at itemIndexPath: IndexPath) -> UICollectionViewLayoutAttributes? {
-        let attr = currentItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionViewContentSize.width)
-        attr.isHidden = true
-        return attr
+        if reloadingItems.contains(itemIndexPath) {
+            let attr = previousItems[itemIndexPath.item].attribute(for: itemIndexPath.item, width: collectionViewContentSize.width)
+            attr.isHidden = true
+            attr.label = "finalLayoutAttributes"
+            attr.isFinalAttributes = true
+            //        attr.isChangeAnimated = false
+            return attr
+
+        } else {
+            return super.finalLayoutAttributesForDisappearingItem(at: itemIndexPath)
+        }
     }
 
 //

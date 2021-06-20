@@ -17,7 +17,7 @@ open class MessageCellLayoutAttributes: UICollectionViewLayoutAttributes {
     /// A string that can be used for debug purposes. Has no effect on the functionality.
     open var label: String = ""
 
-    open var isChangeAnimated: Bool = true
+    open var isChangeAnimated: Bool = false
 
     /// If set to `true` this attributes are the initial attributes which can be invalid.
     open var isInitialAttributes: Bool = false
