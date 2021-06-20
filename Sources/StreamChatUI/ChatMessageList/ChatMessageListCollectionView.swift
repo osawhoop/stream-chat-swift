@@ -250,7 +250,7 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         var scrollBehavior = scrollBehavior
         scrollBehavior?.preUpdate(self)
 
-        Animate(isAnimated: true) {
+        Animate(isAnimated: scrollBehavior?.areUpdatesAnimated ?? true) {
             self.performBatchUpdates {
                 for change in changes {
                     switch change {

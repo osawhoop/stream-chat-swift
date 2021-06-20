@@ -68,15 +68,13 @@ public struct ScrollToLatestMessage: ScrollBehavior {
     public mutating func postUpdate(_ collectionView: UICollectionView) {
         DispatchQueue.main.async {
             UIView.performWithoutAnimation {
-                collectionView.scrollToItem(at: IndexPath(item: 1, section: 0), at: .bottom, animated: false)
-                
                 collectionView.setNeedsLayout()
                 collectionView.layoutIfNeeded()
             }
 
             // Then scroll with animation to reveal the latest message
             Animate {
-                collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .bottom, animated: false)
+//                collectionView.scrollToItem(at: IndexPath(item: 0, section: 0), at: .bottom, animated: false)
             }
         }
     }

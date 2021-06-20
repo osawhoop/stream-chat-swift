@@ -318,7 +318,15 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
 
         areUpdatesAnimated = UIView.areAnimationsEnabled
 
-        preUpdateScrollPositionSnapshot = collectionView!.snapshotScrollPosition()
+        if updateItems.count == 1,
+           let item = updateItems.first,
+           item.updateAction == .insert,
+           item.indexPathAfterUpdate == [0, 0] {
+            preUpdateScrollPositionSnapshot = .topEdge(offset: collectionView!.contentOffset, topVisibleItem: nil)
+        } else {
+            preUpdateScrollPositionSnapshot = collectionView!.snapshotScrollPosition()
+        }
+        
         previousItems = currentItems
         
         for update in updateItems {
@@ -804,7 +812,7 @@ open class ChatMessageListCollectionViewLayout: UICollectionViewLayout {
                     .attribute(for: itemIndexPath.item, width: collectionViewContentSize.width)
                 
                 attr.isInitialAttributes = true
-                attr.transform = CGAffineTransform(translationX: 0, y: 100)
+//                attr.transform = CGAffineTransform(translationX: 0, y: 100)
                 attr.isChangeAnimated = true
                 
                 return attr
