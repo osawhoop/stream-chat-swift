@@ -18,6 +18,13 @@ public protocol ChatMessageListCollectionViewDataSource: UICollectionViewDataSou
 /// with the provided content view type and layout options.
 open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectionView, Customizable, ComponentsProvider {
     private var identifiers: Set<String> = .init()
+    
+    var contentOffsetLabelTopConstaint: NSLayoutConstraint?
+    let contentOffsetLabel: UILabel = {
+        let label = UILabel().withoutAutoresizingMaskConstraints
+        label.backgroundColor = .systemRed
+        return label
+    }()
 
     /// View used to display date of currently displayed messages
     open lazy var scrollOverlayView: ChatMessageListScrollOverlayView = {
@@ -96,10 +103,14 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         }
 
         // Setup `contentOffset` observation so `delegate` is free for anyone that wants to use it
-        contentOffsetObservation = observe(\.contentOffset) { cv, _ in
+        contentOffsetObservation = observe(\.contentOffset) { [weak self] cv, _ in
 //            print("""
 //            💡 CONTENT OFFSET: \(cv.contentOffset)
 //            """)
+            
+            let y = cv.contentOffset.y
+            self?.contentOffsetLabel.text = "y: \(y.rounded())"
+            self?.contentOffsetLabelTopConstaint?.constant = y
             
             /// To display correct date we use bottom edge of `dateView` (we use `cv.layoutMargins.top` for both vertical offsets of `dateView`
             let dateViewRefPoint = CGPoint(
@@ -166,6 +177,12 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
             scrollOverlayView.leadingAnchor.pin(greaterThanOrEqualTo: layoutMarginsGuide.leadingAnchor),
             scrollOverlayView.trailingAnchor.pin(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor)
         ])
+        
+        addSubview(contentOffsetLabel)
+        
+        contentOffsetLabel.leadingAnchor.pin(equalTo: leadingAnchor).isActive = true
+        contentOffsetLabelTopConstaint = contentOffsetLabel.topAnchor.pin(equalTo: topAnchor)
+        contentOffsetLabelTopConstaint?.isActive = true
     }
     
     open func setUpAppearance() {

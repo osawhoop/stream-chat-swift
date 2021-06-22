@@ -17,6 +17,8 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
     public static var reuseId: String { "\(self)" }
 
     public private(set) var messageContentView: _ChatMessageContentView<ExtraData>?
+    
+    let label = UILabel().withoutAutoresizingMaskConstraints
 
     override public func prepareForReuse() {
         super.prepareForReuse()
@@ -51,6 +53,10 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
         topConstraint?.isActive = true
 
         messageContentView!.setUpLayoutIfNeeded(options: options, attachmentViewInjectorType: attachmentViewInjectorType)
+        
+        contentView.addSubview(label)
+        contentView.backgroundColor = UIColor.systemRed.withAlphaComponent(0.1)
+        label.pin(anchors: [.top, .leading], to: contentView)
     }
 
     override public func preferredLayoutAttributesFitting(
@@ -80,6 +86,8 @@ public final class _ChatMessageCollectionViewCell<ExtraData: ExtraDataTypes>: _C
             attributes.previousLayoutOptions = messageContentView?.layoutOptions
 
             print("    -> preferredLayoutAttributesFitting \(layoutAttributes.indexPath) | \(attributes.label)")
+            
+            label.text = "y: \(attributes.frame.origin.y)"
 
 //            isHidden = attributes.isChangeAnimated
         }
