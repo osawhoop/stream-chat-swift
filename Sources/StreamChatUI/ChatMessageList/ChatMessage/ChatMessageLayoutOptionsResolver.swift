@@ -40,6 +40,8 @@ open class _ChatMessageLayoutOptionsResolver<ExtraData: ExtraDataTypes> {
         var options: ChatMessageLayoutOptions = [
             .bubble
         ]
+        
+        options.remove(.reactions)
 
         if message.isSentByCurrentUser {
             options.insert(.flipped)
@@ -78,9 +80,9 @@ open class _ChatMessageLayoutOptionsResolver<ExtraData: ExtraDataTypes> {
             // The bubbles with thread look like continuous bubbles
             options.insert(.continuousBubble)
         }
-        if !message.reactionScores.isEmpty && channel.config.reactionsEnabled {
-            options.insert(.reactions)
-        }
+//        if !message.reactionScores.isEmpty && channel.config.reactionsEnabled {
+//            options.insert(.reactions)
+//        }
         if message.isLastActionFailed {
             options.insert(.errorIndicator)
         }
