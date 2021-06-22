@@ -715,6 +715,15 @@ open class _ComposerVC<ExtraData: ExtraDataTypes>: _ViewController,
             } else if let videoURL = info[.mediaURL] as? URL {
                 let attachment = try AnyAttachmentPayload(localFileURL: videoURL, attachmentType: .video)
                 content.attachments.append(attachment)
+            } else {
+                // Support images from the camera picker.
+                var image = info[.editedImage] as? UIImage
+                image = image ?? info[.originalImage] as? UIImage
+                guard let image = image else { return }
+
+                guard let photoURL = try image.temporaryLocalFileUrl() else { return }
+                let attachment = try AnyAttachmentPayload(localFileURL: photoURL, attachmentType: .image)
+                content.attachments.append(attachment)
             }
         } catch {
             log.assertionFailure(error.localizedDescription)
