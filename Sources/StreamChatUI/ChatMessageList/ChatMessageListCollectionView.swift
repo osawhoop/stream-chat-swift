@@ -53,6 +53,10 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
             }
         }
     }
+    
+    var mirrorYAxis: Bool {
+        (collectionViewLayout as! ChatMessageListCollectionViewLayout).mirrorYAxis
+    }
 
     public required init(layout: ChatMessageListCollectionViewLayout) {
         super.init(frame: .zero, collectionViewLayout: layout)
@@ -76,6 +80,11 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
     }
     
     open func setUp() {
+        transform = mirrorYAxis
+            ? .init(scaleX: 1, y: -1)
+            : .identity
+        scrollOverlayView.transform = transform
+        
         // Setup `contentOffset` observation so `delegate` is free for anyone that wants to use it
         contentOffsetObservation = observe(\.contentOffset) { cv, _ in
             /// To display correct date we use bottom edge of `dateView` (we use `cv.layoutMargins.top` for both vertical offsets of `dateView`
@@ -138,7 +147,9 @@ open class ChatMessageListCollectionView<ExtraData: ExtraDataTypes>: UICollectio
         addSubview(scrollOverlayView)
         
         NSLayoutConstraint.activate([
-            scrollOverlayView.topAnchor.pin(equalTo: layoutMarginsGuide.topAnchor),
+            mirrorYAxis
+                ? scrollOverlayView.bottomAnchor.pin(equalTo: layoutMarginsGuide.bottomAnchor)
+                : scrollOverlayView.topAnchor.pin(equalTo: layoutMarginsGuide.topAnchor),
             scrollOverlayView.centerXAnchor.pin(equalTo: layoutMarginsGuide.centerXAnchor),
             scrollOverlayView.leadingAnchor.pin(greaterThanOrEqualTo: layoutMarginsGuide.leadingAnchor),
             scrollOverlayView.trailingAnchor.pin(lessThanOrEqualTo: layoutMarginsGuide.trailingAnchor)
